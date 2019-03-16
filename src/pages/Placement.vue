@@ -1,7 +1,7 @@
 <template>
   <div class="content">
     <!-- <div class="md-layout"> -->
-      <b-card style="background-color: #E5E5E5;">
+      <b-card style="background-color: #E5E5E5;min-width:930px;">
          <p-vin-table>
 
          </p-vin-table>

@@ -8,7 +8,7 @@
     <!-- <div> -->
 
         <b-row>
-            <!-- <b-col> -->
+         
                  <b-form-group horizontal label="Search" style="font-weight: bold; margin-left: 20px;" class="mb-0">
                     <b-input-group size="sm">
                         <b-form-input v-model="filter" placeholder="Type/Paste to Search" />
@@ -23,7 +23,11 @@
                         <input type="file" id="file" ref="file" @change="handleFileUpload()"/>
                     </label>
                 </div>
-            <!-- </b-col>            -->
+
+                <div>
+                  <button @click="removeLocalData"> Remove Data</button>
+                </div>
+        
         </b-row>
         
         <!-- <b-row> -->
@@ -188,71 +192,76 @@ export default {
         // this.$store.dispatch('getAllCases')
     },
     computed: {
+
         ...mapGetters([
             'allReminders',
             'allCases'
         ]),
-         IDXdbCases () {
-            var self = this
-            var dbName = 'Cases'
-            var version = 1
-            var request = indexedDB.open(dbName, version)
+
+        IDXdbCases () {
+          var self = this
+          var dbName = 'Cases'
+          var version = 1
+          var request = indexedDB.open(dbName, version)
 
 /* REDFLAG */
 // This needs to be commented out 
-            var request  = []
+          var request  = []
 
-            if(request) {
+          if(request) {
 
-                 request.onsuccess = function (event) {
-                    console.log("IDXdbCases IDXDB On Success")
-                    var db = event.target.result
-                    // console.log(db)
-                
-                    var tx = db.transaction(["Cases"], "readwrite").objectStore("Cases")
-                    // console.log(tx)
-                    tx.onerror = function (event) {
-                        console.log("Transaction Error:", event)
-                    }
-                
-                    var objectStore = tx //.objectStore("Cases")
-         
-                
-                    if(objectStore)  
-                        objectStore.get(0).onsuccess = function (event) {
-                            self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0 }) 
-                        }
-                    // db.close()
-                }
+                request.onsuccess = function (event) {
+                  console.log("IDXdbCases IDXDB On Success")
+                  var db = event.target.result
+                  // console.log(db)
+              
+                  var tx = db.transaction(["Cases"], "readwrite").objectStore("Cases")
+                  // console.log(tx)
+                  tx.onerror = function (event) {
+                      console.log("Transaction Error:", event)
+                  }
+              
+                  var objectStore = tx //.objectStore("Cases")
+        
+              
+                  if(objectStore)  
+                      objectStore.get(0).onsuccess = function (event) {
+                          self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0 }) 
+                      }
+                  // db.close()
+              }
 
-                request.onupgradeneeded = function (event) {
-                    console.log("onupgradeneeded Create IDX DB", dbName)
-                    var db = event.target.result
-                    // var tx = db.transaction('Cases', "readwrite")
-                    // tx.onerror = function (event) {
-                    //     console.log("Transaction Error:", event)
-                    // }
-                    var objStore = db.createObjectStore("Cases")
-                    // db.close()
-                    // var objectStore = tx.objectStore("Cases")
-                    // objStore.add([], 0)
-                }
-                
-  
-                request.onerror = function (event ) {
-                    console.log("Filtered Data IndexedDB Error:", event)
-                    return []
-                }
-             return []
-            }
+              request.onupgradeneeded = function (event) {
+                  console.log("onupgradeneeded Create IDX DB", dbName)
+                  var db = event.target.result
+                  // var tx = db.transaction('Cases', "readwrite")
+                  // tx.onerror = function (event) {
+                  //     console.log("Transaction Error:", event)
+                  // }
+                  var objStore = db.createObjectStore("Cases")
+                  // db.close()
+                  // var objectStore = tx.objectStore("Cases")
+                  // objStore.add([], 0)
+              }
+              
+ 
+              request.onerror = function (event ) {
+                  console.log("Filtered Data IndexedDB Error:", event)
+                  return []
+              }
+            return []
+          }
             
         },
         remindersArr() {
+          
             console.log("Computing remindersArr")
             // console.log("localStorage.Reminders", localStorage.Reminders)
-            if(localStorage.getItem("Reminders")) return JSON.parse(localStorage.getItem("Reminders"))
+            // if(localStorage.getItem("Reminders")) return JSON.parse(localStorage.getItem("Reminders"))
+            console.log(this.allReminders)
             if(this.allReminders) return Object.values(this.allReminders)
             return []
+
         },
         // reminderToggleArr() {
         //     return this.remindersArr.filter(doc => { return this.collectorToggle.includes(doc.collector)})
@@ -264,28 +273,40 @@ export default {
             return []
         },
         filteredData() {
+
             this.isLoading = 1
             var t0 = new Date()
-            // console.log("localStorage.Reminders", JSON.parse(localStorage.getItem("Reminders")))
-            if(localStorage.getItem("Reminders")) {
-              console.log("localStorage Reminders Used")
-              var reminders = JSON.parse(localStorage.getItem("Reminders"))
-              // console.log("reminders", reminders)
-            } else {
+   
+            // if(localStorage.getItem("Reminders")) {
+            //   console.log("localStorage Reminders Used")
+            //   // var reminders = JSON.parse(localStorage.getItem("Reminders"))
+            //   // console.log("reminders", reminders)
+            // } else {
 
-              console.log("Imported Reminders Used")
-              // if(this.remindersArr) {
-                var reminders = this.importedJSON ? this.importedJSON : this.remindersArr
-              }
+            //   console.log("Imported Reminders Used")
+            //   // if(this.remindersArr) {
+            //   var reminders = this.importedJSON ? this.importedJSON : this.remindersArr
+            // }
+
+            var reminders = this.remindersArr
+
+
+
+        // Processing time arrays
+            var repReminderTime = []
+            var caseMatchTime = []
+            var daysLastTouchTime = []
+
+
               
 
-              // console.log("reminders", reminders)
-            // }
-            
-            // var reminders = this.remindersArr
-            // console.log("this.casesArr", this.casesArr)
-            var cases = this.casesArr
-            console.log("Reminders", reminders.length > 0 , "Cases", cases.length > 0)
+
+
+
+            var cases = this.allCases
+            // var cases = this.casesArr
+            var casesKeys = Object.keys(cases)
+            console.log("Reminders", reminders.length > 0 , "Cases", cases.length > 0) 
 
 
             if(reminders.length > 0 && cases.length > 0) {
@@ -307,6 +328,7 @@ export default {
     /*REDFLAG*/
     // Remove this filter
                 // var reps = reps.filter(rep => { return rep == 'Admin Staff' })
+                var reps_t0 = new Date()
 
                 reps.forEach(rep => {
                     // this.isLoading = 1
@@ -324,59 +346,85 @@ export default {
                         //                         return rep == (doc.collector_first_name + " " + doc.collector_last_name)
                         //                     })
 
-                
+                        var repReminders_t0 = new Date()
                         var repReminders = reminders.filter(data => {
                             return data.collector == rep
                         })
+                        var repReminders_t1 = new Date()
+                        var repReminders_time = repReminders_t1.getTime() - repReminders_t0.getTime()
+                        repReminderTime.push(repReminders_time)                        
+                        // console.log("Rep Reminders Filter processing benchmark:", repReminders_time, "ms")
+
                         // console.log(rep, repReminders)
 
                         repReminders.forEach(reminder => {
                         // reminders.forEach(reminder => {
-                            reminder.dueDate = moment(reminder.due_datetime)
-                            // var dueDate = new Date(reminder.due_datetime)
+                          var dueDate = moment(reminder.due_datetime)
+                          // var dueDate = new Date(reminder.due_datetime)
 
-                            // var caseKey = this.getKeyByValue(this.allCases, reminder.account_number, 'case_number')
-                            // var caseMatch = caseKey ? this.allCases[caseKey] : []
-                            
-                            var caseMatch = cases.filter(doc => {
-                                                return doc.case_number == reminder.account_number
-                                            })
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                          // var caseKey = this.getKeyByValue(this.allCases, reminder.account_number, 'case_number')
+                          // var caseMatch = caseKey ? this.allCases[caseKey] : []                       
+                          var caseMatch_t0 = new Date()
+                          // var caseMatch = []
 
-                            if(caseMatch[0]) {
-                                daysLastTouch = today.diff(moment(caseMatch[0].last_work_date), "days" )
-                                if( daysLastTouch >= 5 ) { this.noTouch5days.push(reminder) }
-                                if( daysLastTouch >= 30 ) { this.noTouch30days.push(reminder) }
-                                if( daysLastTouch >= 60 ) { this.noTouch60days.push(reminder) }
-                            }
-                           
+                          var caseKey = casesKeys.find(key => cases[key]['case_number'] == reminder.account_number)
+                          var caseMatch = cases[caseKey]
+                 
+                          // var caseMatch = cases.find(doc => {
+                          //                     return doc.case_number == reminder.account_number
+                          //                 })
+
+                          var caseMatch_t1 = new Date()
+                          var caseMatch_time = caseMatch_t1.getTime() - caseMatch_t0.getTime()
+                          caseMatchTime.push(caseMatch_time)
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+                          var daysLastTouch_t0 = new Date()
+                          if(caseMatch) {
+                            daysLastTouch = today.diff(moment(caseMatch.last_work_date), "days" )
+                            if( daysLastTouch >= 60 ) { this.noTouch60days.push(reminder) }
+                            else if( daysLastTouch >= 30 ) { this.noTouch30days.push(reminder) }
+                            else if( daysLastTouch >= 5 ) { this.noTouch5days.push(reminder) }                            
+                          }
+                          var daysLastTouch_t1 = new Date()
+                          var daysLastTouch_time = daysLastTouch_t1.getTime() - daysLastTouch_t0.getTime()
+                          daysLastTouchTime.push(daysLastTouch_time)
+     
+     
+
+
+                          caseMatch ? reminder.Client = caseMatch.client_name : reminder.Client = ''
+
                             // console.log(caseMatch)
 
                             // var caseMatchIdx = Object.keys(this.allCases).find(key=> this.allCases[key]['case_number'] == reminder.account_number)
                             // var caseMatchIdx = this.allCases.findIndex(x => x.case_number == reminder.account_number)
                             // var caseMatch = this.allCases[caseMatchIdx]
 
-                            if(reminder.collector == rep) {
-                                
-                                if(reminder.dueDate < today) {
+                          if(reminder.collector == rep) {
+                              
+                              if(dueDate < today) {
 
-                                    RemindersPastDueCount.push(1)
+                                  RemindersPastDueCount.push(1)
 
-                                    if(this.isCasesImport) {
-                                      // console.log(caseMatch[0])
-                                      PastDueDollar.push(caseMatch[0] ? (isNaN(caseMatch[0].current_balance_due.replace(",","").replace(",","").replace("$","")) ? 0 : caseMatch[0].current_balance_due.replace(",","").replace(",","").replace("$","")) : 0)
-                                    } else {
-                                      PastDueDollar.push(caseMatch[0] ? caseMatch[0].current_balance_due : 0)
-                                    }   
-                                    
-                                    
-                                    PastDueDays.push(today.diff(reminder.dueDate, "days"))
-                                    this.pastDueReminders.push(reminder)
-                                                              
-                                }
+                                  if(this.isCasesImport) {
+                                    // console.log(caseMatch[0])
+                                    PastDueDollar.push(caseMatch ? (isNaN(caseMatch.current_balance_due.replace(",","").replace(",","").replace("$","")) ? 0 : caseMatch.current_balance_due.replace(",","").replace(",","").replace("$","")) : 0)
+                                  } else {
+                                    PastDueDollar.push(caseMatch ? caseMatch.current_balance_due : 0)
+                                  }   
+                                  
+                                  
+                                  PastDueDays.push(today.diff(dueDate, "days"))
+                                  this.pastDueReminders.push(reminder)
+                                                            
+                              }
 
-                                TotalReminders.push(1)
+                              TotalReminders.push(1)
 
-                            }
+                          }
 
                         })
 
@@ -396,12 +444,24 @@ export default {
                         repMetrics.push(kpis)
                     // }           
                 })
+                var reps_t1 = new Date()
+                var reps_time = reps_t1.getTime() - reps_t0.getTime() 
+                console.log("Reps processing benchmark:", reps_time, "ms")
+
                 this.pastDueReminders = this.pastDueReminders.sort((a,b) => { return a.dueDate - b.dueDate }) 
+
                 var t1 = new Date()
                 var time = t1.getTime() - t0.getTime() 
                 console.log("Reminder data processing benchmark:", time, "ms")
-                this.isLoading = 0                
+                this.isLoading = 0
+
+
+                console.log("Rep Reminders Filter processing benchmark:", this.sumArray(repReminderTime), "ms")
+                console.log("Case Match Filter processing benchmark:", this.sumArray(caseMatchTime), "ms")
+                console.log("Days Last Touch Checks processing benchmark:", this.sumArray(daysLastTouchTime), "ms")
+
                 return repMetrics
+
             } else {
               this.isLoading = 0
             }
@@ -418,11 +478,12 @@ export default {
         }
     },
     watch: {
-        allReminders: function () {
-            this.filteredData()
-        }
+        
     },
     methods: {
+        removeLocalData() {
+
+        },
         addCollector(collector) {
             this.collectorToggle.push(collector)
             this.$forceUpdate()
@@ -499,7 +560,7 @@ export default {
 
                         self.importedJSON = await XL_row_object
                         // self.remindersArr = await XL_row_object
-                        self.$store.dispatch('getAllReminders', XL_row_object)
+                        self.$store.dispatch('getAllReminders', { Reminders: XL_row_object, isImport: 1 })
   
                     })        
                 }

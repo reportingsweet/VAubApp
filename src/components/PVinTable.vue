@@ -214,7 +214,7 @@
                 </table>
                 </div>
                 
-                <div style="overflow-y:scroll;max-height:400px;" 
+                <div style="overflow-y:scroll;max-height:400px;min-height:400px;" 
                     onscroll="document.getElementById('headerdiv').scrollLeft = this.scrollLeft;">
                     <table style="min-width:950px;">
                         <tbody>
@@ -480,7 +480,7 @@ export default {
             
                 if(this.client=='(Select All)') {} else {
                     cases = cases.filter(doc => {
-                        return doc.creditor == this.client
+                        return doc.client_name == this.client
                     })
                 }
                 // console.log(cases)

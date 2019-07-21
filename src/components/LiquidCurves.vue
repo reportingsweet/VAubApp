@@ -1,18 +1,20 @@
 <template>
-    <div :data="filteredData" :input="IDXdbCases">
+    <div :data="filteredData">
         <div class="grid">
             <div class="col1">
-                 <b-form-group horizontal  label="Client" class="mb-0" style="font-weight: bold;padding-top: 4px;">
+
+                 <!-- <b-form-group horizontal  label="Client" class="mb-0" style="font-weight: bold;padding-top: 4px;">
                     <b-input-group size="sm" style="width: 200px;">
                     <b-form-select v-model="client" aria-describedby="" style="float:left;">
                         <option>(Select All)</option>
                         <option v-for="(value, key, index) in clientDistinct">{{ value }}</option>
                     </b-form-select>
-                    <b-input-group-append>
+                    <b-input-group-append> 
                         <b-btn :disabled="client=='(Select All)'" @click="client='(Select All)'">Clear</b-btn>
                     </b-input-group-append>
                     </b-input-group>
-                </b-form-group>
+                </b-form-group> -->
+
             </div>
             <div class="col2">
                  <div style="margin-left: 10px;" class="large-12 medium-12 small-12 cell">
@@ -213,65 +215,60 @@ export default {
         }
     },
     created () {
-        this.$store.dispatch('getAllCases')
+        // this.$store.dispatch('getAllCases')
         this.$store.dispatch('getAllPayments')
     },
     computed: {
         ...mapGetters([
             'allCases',
-            'allPayments'
+            'allPayments',
+            'allCaseIDXs'
         ]),
          IDXdbCases () {
-            var self = this
-            var dbName = 'Cases'
-            var version = 1
-            var request = indexedDB.open(dbName, version)
+            if(this.allCases) {
+                var self = this
+                var dbName = 'Cases'
+                var version = 1
+                var request = indexedDB.open(dbName, version)
 
-            // var cases = []
+                // var cases = []
 
-            if(request) {
+                if(request) {
 
-                 request.onsuccess = function (event) {
-                    console.log("IDXdbCases IDXDB On Success")
-                    var db = event.target.result
-                    // console.log(db)
-                
-                    var tx = db.transaction(["Cases"], "readwrite").objectStore("Cases")
-                    // console.log(tx)
-                    tx.onerror = function (event) {
-                        console.log("Transaction Error:", event)
-                    }
-                
-                    var objectStore = tx //.objectStore("Cases")
-         
-                
-                    if(objectStore)  
-                        objectStore.get(0).onsuccess = function (event) {
-                            self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0 }) 
+                    request.onsuccess = function (event) {
+                        console.log("IDXdbCases IDXDB On Success")
+                        var db = event.target.result
+                        // console.log(db)
+                    
+                        var tx = db.transaction(["Cases", "CaseIDX"], "readwrite")
+                        // console.log(tx)
+                        tx.onerror = function (event) {
+                            console.log("Transaction Error:", event)
                         }
-                    // db.close()
-                }
-
-                request.onupgradeneeded = function (event) {
-                    console.log(" onupgradeneeded Create IDX DB", dbName)
-                    var db = event.target.result
-                    // var tx = db.transaction('Cases', "readwrite")
-                    // tx.onerror = function (event) {
-                    //     console.log("Transaction Error:", event)
-                    // }
-                    var objStore = db.createObjectStore("Cases")
-                    // db.close()
-                    // var objectStore = tx.objectStore("Cases")
-                    // objStore.add([], 0)
-                }
-                
-               
+                    
+                        var objectStore = tx.objectStore("Cases")
             
-                request.onerror = function (event ) {
-                    console.log("Filtered Data IndexedDB Error:", event)
-                    return []
+                    
+                        if(objectStore)  
+                            objectStore.get(0).onsuccess = function (event) {
+                                self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0, CallLoc: 'LiquidCurves IDXdbCases' }) 
+                            }
+                        db.close()
+                    }
+
+                    request.onupgradeneeded = function (event) {
+                        console.log(" onupgradeneeded Create IDX DB", dbName)
+                        var db = event.target.result
+                        var objStore = db.createObjectStore("Cases")
+                        var caseIdxObj = db.createObjectStore("CaseIDX")
+                    }
+                                                    
+                    request.onerror = function (event ) {
+                        console.log("Filtered Data IndexedDB Error:", event)
+                        return []
+                    }
+                return []
                 }
-             return []
             }
             
         },
@@ -285,6 +282,10 @@ export default {
             var creditors = [... new Set(this.casesArr.map(s => s.creditor))].sort()         
             return creditors
         },
+
+
+
+
         paymentsArr() {
 
             // if(this.allPayments) return Object.values(this.allPayments)
@@ -298,13 +299,26 @@ export default {
              return []
         },
 
+
+
+        
+
         creditorAccountNum () {
             return this.lookUpCreditorAccountNum(this.client)
         },
 
         filteredData() {
 
-            var t0 = new Date() 
+            var t0 = new Date()
+
+            // var vinTime = []
+            var filterCasesTime = []
+            var casesTime = []
+            var cummTime = []
+            var IN = 0 
+            var OUT = 0
+
+            var caseIDXs = this.allCaseIDXs ? this.allCaseIDXs : []
 
             if(this.client=='(Select All)') { 
                 var cases = this.casesArr
@@ -312,7 +326,7 @@ export default {
             } else {
 
                 var cases = this.casesArr.filter(doc => {
-                    return doc.creditor == this.client
+                    return doc.client_name == this.client
                 })
 
             }
@@ -334,46 +348,51 @@ export default {
             // console.log("payments", payments)
 
             var months = []
-            console.log("Liquid Curves Data Check:", "Cases", cases.length > 0, "Payments",  payments.length > 0)
-            if(cases.length > 0 && payments.length > 0) {
+            console.log("Liquid Curves Data Check:", "Cases", cases.length > 0, "CaseIDX",  caseIDXs.length > 0, "Payments",  payments.length > 0)
+            
+            if(cases.length > 0 && payments.length > 0 && caseIDXs.length > 0) {
 
             // console.log("payments", payments)
             // Process payments data
+                console.log("Process Payments")
+                var t0_pmtProcess = new Date()
                 payments.forEach(rec => {
-                    var account = cases.filter(doc => {
-                        if(this.isImport) {        
-                            return doc.case_number == rec["Account #"]
-                        } else {             
-                            return doc.case_number == rec["Account.."]
-                        }
-                        
-                    })
-                    if(account[0]) {
 
+                    if(this.isImport) {        
+                        var case_number = rec["Account #"]
+                    } else {             
+                        var case_number = rec["Account.."]
+                    }
+
+                    var caseKey = caseIDXs[case_number]
+                    var account = cases[caseKey]
+
+                    if(account) {
 /*  REDFLAG */
 // IMPORT excel vs read file date issue
-                    if(this.isCasesImport) {            
-                    // Import Excel
-                        var date = account[0].date_entered_in_simplicity.split('/')
-                        var y = date[2]
-                        var m = date[0]
-                        if(m.length<2) m = '0' + m
-                        var vinDate = '20' + y + '-' + m + '-' + '01'
-                    } else {
-                    // Read File
-                        var date = account[0].date_entered_in_simplicity.split('-')
-                        var vinDate = date[0] + "-" + date[1] + "-" + '01'
-                    }                  
+                        if(this.isCasesImport) {            
+                        // Import Excel
+                            var date = account.date_entered_in_simplicity.split('/')
+                            var y = date[2]
+                            var m = date[0]
+                            if(m.length<2) m = '0' + m
+                            var vinDate = '20' + y + '-' + m + '-' + '01'
+                        } else {
+                        // Read File
+                            var date = account.date_entered_in_simplicity.split('-')
+                            var vinDate = date[0] + "-" + date[1] + "-" + '01'
+                        }                  
 
-                        var vintage_date = moment(vinDate)
-                        var paymentDate = moment(rec.Date)
+                            var vintage_date = moment(vinDate)
+                            var paymentDate = moment(rec.Date)
 
-                        rec.Vintage = vinDate
-                        rec.VinMo = paymentDate.diff(vintage_date, "months")
+                            rec.Vintage = vinDate
+                            rec.VinMo = paymentDate.diff(vintage_date, "months")
                     }
 
                 })
-
+                var t1_pmtProcess = new Date()
+                var time_pmtProcess = t1_pmtProcess.getTime() - t0_pmtProcess.getTime()
             // Get clean vintages
                 var vintages = [... new Set(cases.map(s => s.date_entered_in_simplicity))]
                 var clean = []
@@ -409,6 +428,8 @@ export default {
                 var vinLength = today.diff(minDate, "months")
                 months = vinLength
 
+
+                console.log("Build Vintages")
                 cleanVins.forEach(vintage => {
 
                     var kpis = []
@@ -428,6 +449,7 @@ export default {
                     // console.log(vinMonths)
 
                     // Get only cases for place vintage
+                        var t0_filtercases = new Date()
                         var filterCases = cases.filter(item => {
 
 /*  REDFLAG */
@@ -445,8 +467,14 @@ export default {
                                 var date = item.date_entered_in_simplicity.split('-')
                                 return date[0] + "-" + date[1] + "-" + '01' == vintage
                             }
+
                         })
+                        var t1_filtercases = new Date()
+                        var time_filtercases = t1_filtercases.getTime() - t0_filtercases.getTime()
+                        filterCasesTime.push(time_filtercases)
                         
+                        
+                        var t0_cases = new Date() 
 
                         filterCases.forEach(doc => {
 
@@ -487,12 +515,16 @@ export default {
                             if(vin_date == vintage) {
                                 
                                 if(this.isCasesImport) {
+
                                     TotalCollected.push(doc.total_payments ? (isNaN(doc.total_payments.replace(",","").replace(",","").replace("$","")) ? 0 : doc.total_payments.replace(",","").replace(",","").replace("$","")) : 0)
                                     PlacedAmount.push(doc.original_claim_amount ? (isNaN(doc.original_claim_amount.replace(",","").replace(",","").replace("$","")) ? 0 : doc.original_claim_amount.replace(",","").replace(",","").replace("$","")) : 0)
+                                
                                 } else {
-                                     TotalCollected.push(doc.total_payments ? doc.total_payments : 0)
-                                     PlacedAmount.push(doc.original_claim_amount ? doc.original_claim_amount : 0)
-                                }
+
+                                    TotalCollected.push(doc.total_payments ? doc.total_payments : 0)
+                                    PlacedAmount.push(doc.original_claim_amount ? doc.original_claim_amount : 0)
+                               
+                               }
                                 
 
                                 // Add payment amount to vintage vin month array
@@ -527,7 +559,17 @@ export default {
 
                                             var fpAmount = filterPayments[0].Amount ? Number(isNaN(filterPayments[0].Amount.replace(",","").replace(",","").replace("$","")) ? 0 : filterPayments[0].Amount.replace(",","").replace(",","").replace("$","")) : 0
                                             // console.log(vinMonths[vintage][filterPayments[0].VinMo])
-                                            vinMonths[vintage][filterPayments[0].VinMo].push(fpAmount)  
+    /* REDFLAG */
+    //This was causing an error 
+                                            
+                                            if(vintage&&filterPayments[0].VinMo) {
+                                                IN += 1
+                                                vinMonths[vintage][filterPayments[0].VinMo].push(fpAmount)  
+                                            } else {
+                                                OUT += 1
+
+                                            }
+                                            
 
                                         }
                                         
@@ -536,6 +578,11 @@ export default {
                                 }                   
                             }
                         }) // END cases loop
+
+                        var t1_cases = new Date()
+                        var time_cases = t1_cases.getTime() - t0_cases.getTime()
+
+                        casesTime.push(time_cases)
 
 
                     // console.log(vinMonths[vintage].length)
@@ -551,19 +598,25 @@ export default {
                     kpis.PlacedAmount = Number(this.sumArray(PlacedAmount))
                     kpis.Rate = []
 
+            
+                    var t0_cummCurve = new Date()
                     for(var i = 0; i<vinMonths[vintage].length;i++) {
 
-                // Dollars in vinMonth
-                    // kpis[i] = vinMonths[vintage][i]
-    
-                // Percent in vinMonth
-                    //    kpis[i] = (isNaN(vinMonths[vintage][i] / kpis.PlacedAmount) ? 0 : vinMonths[vintage][i] / kpis.PlacedAmount)
+                    // Dollars in vinMonth
+                        // kpis[i] = vinMonths[vintage][i]
+        
+                    // Percent in vinMonth
+                        //    kpis[i] = (isNaN(vinMonths[vintage][i] / kpis.PlacedAmount) ? 0 : vinMonths[vintage][i] / kpis.PlacedAmount)
 
-                // Cummulative Collection Curve
-                    kpis[i] = (isNaN(vinMonths[vintage][i] / kpis.PlacedAmount) ? 0 : vinMonths[vintage][i] / kpis.PlacedAmount) + (kpis[i - 1] ? kpis[i - 1] : 0 )
-                    kpis.Rate.push((isNaN(vinMonths[vintage][i] / kpis.PlacedAmount) ? 0 : vinMonths[vintage][i] / kpis.PlacedAmount) + (kpis[i - 1] ? kpis[i - 1] : 0 ))
+                    // Cummulative Collection Curve
+                        kpis[i] = (isNaN(vinMonths[vintage][i] / kpis.PlacedAmount) ? 0 : vinMonths[vintage][i] / kpis.PlacedAmount) + (kpis[i - 1] ? kpis[i - 1] : 0 )
+                        kpis.Rate.push((isNaN(vinMonths[vintage][i] / kpis.PlacedAmount) ? 0 : vinMonths[vintage][i] / kpis.PlacedAmount) + (kpis[i - 1] ? kpis[i - 1] : 0 ))
 
                     }
+
+                    var t1_cummCurve = new Date()
+                    var time_cummCurve = t1_cummCurve.getTime() - t0_cummCurve.getTime()
+                    cummTime.push(time_cummCurve)
 
 
                     kpis.CollectionRate = kpis.TotalCollected ? kpis.TotalCollected / kpis.PlacedAmount : 0
@@ -594,6 +647,9 @@ export default {
                 var counter = 0
 
                 // Adding data to charts
+                
+                var t0_vins = new Date()
+
                 vins.forEach(vin => {
                     // console.log(vin)
                     // this.chartOptions.chart.events.addSeries(() => {
@@ -620,6 +676,10 @@ export default {
                     counter +=1
                 })
 
+                var t1_vins = new Date()
+                var time_vins = t1_vins.getTime() - t0_vins.getTime()
+
+
                 
 
                 // this.chartOptions.chart.events.redraw()
@@ -628,8 +688,16 @@ export default {
                 this.$forceUpdate()
                     
                 var t1 = new Date()
-                var time = t1.getTime() - t0.getTime() 
+                var time = t1.getTime() - t0.getTime()
+
+
+                console.log("Payment processing benchmark:", time_pmtProcess, "ms")
+                console.log("Filter Cases processing benchmark:", this.sumArray(filterCasesTime), "ms")
+                console.log("Cases processing benchmark:", this.sumArray(casesTime), "ms")
+                console.log("Cummulative Curve processing benchmark:", this.sumArray(cummTime), "ms")
+                console.log("Building vintages into the chart processing benchmark:", time_vins, "ms")
                 console.log("Liquid Curves data processing benchmark:", time, "ms")
+                console.log("IN", IN, "OUT", OUT)
         
                 return []
             }

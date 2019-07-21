@@ -5,8 +5,8 @@
     </div>
 
     <md-card-content>
-      <h6 class="category text-gray">CEO / Co-Founder</h6>
-      <h4 class="card-title">Alec Thompson</h4>
+      <h6 class="category text-gray">Attorney at Law</h6>
+      <h4 class="card-title">Vinnie Aubrey</h4>
       <p class="card-description">
      </p>
       <md-button class="md-round md-success">Follow</md-button>
@@ -19,7 +19,7 @@ export default {
   props: {
     cardUserImage: {
       type: String,
-      default: require('@/assets/img/faces/marc.jpg')
+      default: require('@/assets/img/faces/vinnie.jpg')
     }
   },
   data () {

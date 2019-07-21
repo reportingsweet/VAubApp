@@ -1,5 +1,6 @@
 <template>
     <div :input="IDXdbCases">
+    <!-- <div> -->
         <div style=" text-align:left; max-width:600px;min-width:600px;" class="grid">            
             <b-col style="max-width:400px;min-width:400px;" class="col1">
 
@@ -295,12 +296,36 @@
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex'
 import JsonExcel from 'vue-json-excel'
-import  { moment } from '@/main'
 
 
 export default {
     components: {
         JsonExcel
+    },
+     filters: {
+        percFormat (value) {
+            if(!value) return ''
+            return ((value + 0.00001) * 100).toFixed(2) + '%'
+        },
+        currencyFormat(value) {
+            if(!value) return ''
+            var formatter = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 2
+                })
+            return formatter.format(value)
+        }
+    },
+    watch: {
+        importedJSON: function(val) {
+            // console.log("WATCHER", val)
+            
+        },
+       
+         value () {
+            this.setWidth()
+        }
     },
     data () {
         return {
@@ -368,8 +393,9 @@ export default {
             }
         }
     },
+
     created() {
-        this.$store.dispatch('getAllCases')
+        this.$store.dispatch('getAllCases', { CallLoc: 'PVinTable.created()'})
     },
     
     computed: {
@@ -383,54 +409,53 @@ export default {
         },
 
         IDXdbCases () {
-            var self = this
-            var dbName = 'Cases'
-            var version = 1
-            var request = indexedDB.open(dbName, version)
+            // console.log("UI IDXdbCases this.allCases", this.allCases)
+            if(this.allCases) {} else {
+ 
+                var self = this
+                var dbName = 'Cases'
+                var version = 1
+                var request = indexedDB.open(dbName, version)
 
-            // var request = []
+                // var request = []
 
-            if(request) {
+                if(request) {
 
-                 request.onsuccess = function (event) {
-                    console.log("IDXdbCases IDXDB On Success")
-                    var db = event.target.result
-                    // console.log(db)
-                
-                    var tx = db.transaction(["Cases"], "readwrite").objectStore("Cases")
-                    // console.log(tx)
-                    tx.onerror = function (event) {
-                        console.log("Transaction Error:", event)
-                    }
-                
-                    var objectStore = tx //.objectStore("Cases")
-         
-                
-                    if(objectStore)  
-                        objectStore.get(0).onsuccess = function (event) {
-                            self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0 }) 
+                    request.onsuccess = function (event) {
+                        console.log("UI IDXdbCases IDXDB On Success")
+                        var db = event.target.result
+                        var tx = db.transaction(["Cases", "CaseIDX"], "readwrite")
+                        
+                        // console.log(tx)
+                        tx.onerror = function (event) {
+                            console.log("Transaction Error:", event)
                         }
-                    // db.close()
-                }
+                    
+                        var objectStore = tx.objectStore("Cases")
+            
+                    
+                        if(objectStore)  
+                            objectStore.get(0).onsuccess = function (event) {
+                                self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0, CallLoc: 'PVinTable.IDXdbCases' }) 
+                            }
+                        db.close()
+                
 
-                request.onupgradeneeded = function (event) {
-                    console.log(" onupgradeneeded Create IDX DB", dbName)
-                    var db = event.target.result
-                    // var tx = db.transaction('Cases', "readwrite")
-                    // tx.onerror = function (event) {
-                    //     console.log("Transaction Error:", event)
-                    // }
-                    var objStore = db.createObjectStore("Cases")
-                    // db.close()
-                    // var objectStore = tx.objectStore("Cases")
-                    // objStore.add([], 0)
-                }
+                    }
 
-                request.onerror = function (event ) {
-                    console.log("Filtered Data IndexedDB Error:", event)
-                    return []
+                    request.onupgradeneeded = function (event) {
+                        console.log("onupgradeneeded Create IDX DB", dbName)
+                        var db = event.target.result
+                        var objStore = db.createObjectStore("Cases")
+                        var caseIdxObj = db.createObjectStore("CaseIDX")
+                    }
+
+                    request.onerror = function (event ) {
+                        console.log("Filtered Data IndexedDB Error:", event)
+                        return []
+                    }
+                return []
                 }
-             return []
             }
             
         },
@@ -441,7 +466,8 @@ export default {
 
  
             if(this.allCases) return Object.values(this.allCases)
-           
+            
+            this.IDXdbCases
             return []
         },
 
@@ -452,11 +478,11 @@ export default {
 
         , sortedData() {
             var sortData = this.filteredData
-            console.log("sortedData", this.sortDir)
+            // console.log("sortedData", this.sortDir)
             if(this.sortDir) {
-                sortData = sortData.sort((a,b) => { return moment(a.Vintage) - moment(b.Vintage) })
+                sortData = sortData.sort((a,b) => { return new Date(a.Vintage) - new Date(b.Vintage) })
             } else {
-                sortData = sortData.sort((a,b) => { return moment(b.Vintage) - moment(a.Vintage) })
+                sortData = sortData.sort((a,b) => { return new Date(b.Vintage) - new Date(a.Vintage) })
             }
             
             return sortData
@@ -470,9 +496,14 @@ export default {
         
             // var cases = this.importedJSON ? this.importedJSON : this.casesArr
             var cases = this.casesArr
+
+// Time processing benchmarks            
+            var casesTime = []
+            var dateDiffTime = []
             
             // console.log("casesArr cases", cases)
 
+            console.log("Cases", cases.length>0)
             if(cases.length>0) {
                 console.log("Processing Cases")
             
@@ -491,6 +522,7 @@ export default {
 
     /*  REDFLAG */
     // IMPORT excel vs read file date issue
+  
             if(this.isImport) {
             // Import Excel
                     vintages.forEach(vintage => {
@@ -512,7 +544,8 @@ export default {
                     })
             }
                 
-                var cleanVins = [... new Set(clean)]
+            var cleanVins = [... new Set(clean)]
+        
 
                 
 
@@ -550,11 +583,16 @@ export default {
                     var UnitYeild = []
                     var ContingencyRate = []
                     
-                    var today = moment(new Date())
+                    var today = new Date()
 
+
+
+
+                    var t0_cases = new Date()
                     cases.forEach(doc => {
-                        
-                    
+ 
+                        var t0_dateDiffs = new Date()  
+ 
     /*  REDFLAG */
     // IMPORT excel vs read file date issue
                         if(this.isImport) {
@@ -562,20 +600,23 @@ export default {
                             var date = doc.date_entered_in_simplicity.split('/')
                             var y = date[2]
                             var m = date[0]
+                            var d = date[1]
                             if(m.length<2) m = '0' + m
                             var vin_date = '20' + y + "-" + m + "-" + '01'
+                            var simp_date = new Date('20' + y + "-" + m + "-" + d)
                         } else {
                         // Read File
                             var date = doc.date_entered_in_simplicity.split('-')
                             var vin_date = date[0] + "-" + date[1] + "-" + '01'
+                            var simp_date = new Date(date[0] + "-" + date[1] + "-" + date[2])
                         }
                     
 
-                        var mdate = moment(date)
+
                         // console.log(mdate)
-                        var mcomplaintFiledDate = doc.complaint_filed_date ? moment(doc.complaint_filed_date) : ""
-                        var mcomplaint_summons_served_date = doc.complaint_summons_served_date ? moment(doc.complaint_summons_served_date) : ""
-                        var mjudgment_entered_date = doc.judgment_entered_date ? moment(doc.judgment_entered_date) : ""
+                        var mcomplaintFiledDate = doc.complaint_filed_date ? new Date(doc.complaint_filed_date) : ""
+                        var mcomplaint_summons_served_date = doc.complaint_summons_served_date ? new Date(doc.complaint_summons_served_date) : ""
+                        var mjudgment_entered_date = doc.judgment_entered_date ? new Date(doc.judgment_entered_date) : ""
                 
 
                         if(vin_date == vintage) {
@@ -584,13 +625,16 @@ export default {
                             doc.is_closed == 'Closed' ? ClosedFiles.push(1) : ''
                             
 
-                            RecentPmtFlag.push( today.diff(new Date(doc.last_payment_date), "days") <= 90 ? 1 : 0)
+                            
 
                             ServedCount.push(doc.complaint_summons_served_date != '' && doc.complaint_summons_served_date ? 1 : 0)
                             SuedCount.push(doc.complaint_filed_date ? 1 : 0)
                             JmtCount.push(doc.judgment_amount ?  1 : 0)
-    /*  */
+
+
+                                 
                             if(this.isImport) {
+
                                 TotalCollectedCalc.push(doc.total_payments ? doc.total_payments.replace(",","").replace(",","").replace("$","") : 0)
 
                                 TotalOriginalClaimAmt.push(doc.original_claim_amount ? doc.original_claim_amount.replace(",","").replace(",","").replace("$","") : 0)
@@ -598,34 +642,60 @@ export default {
                                 FaceValue.push(doc.current_balance_due ? (isNaN(doc.current_balance_due.replace(",","").replace(",","").replace("$","")) ? 0 : doc.current_balance_due.replace(",","").replace(",","").replace("$","")) : 0)
 
                                 TotalFees.push(doc.current_fees ? doc.current_fees.replace(",","").replace(",","").replace("$","") : 0)
+
                             } else {
+
                                 TotalCollectedCalc.push(doc.total_payments ? doc.total_payments : 0)
                                 TotalOriginalClaimAmt.push(doc.original_claim_amount ? doc.original_claim_amount : 0)
                                 FaceValue.push(doc.current_balance_due ? doc.current_balance_due : 0)
                                 TotalFees.push(doc.current_fees ? doc.current_fees : 0)
+
                             }
                             
+
+// 2015-0001 has complaint filed date
+                            // if(doc.case_number == '2015-0001') {
+                            //     console.log("mdate", simp_date)
+                            //     console.log("mcomplaintFiledDate", mcomplaintFiledDate)
+                            // }
+                            
+
+                            
+                            RecentPmtFlag.push( this.dateDiff(today, new Date(doc.last_payment_date)) <= 90 ? 1 : 0)
 
                             ComplaintSummonsCount.push(doc.complaint_summons_served_date != '' && doc.complaint_summons_served_date ? 1 : 0)
                             ComplaintSentCount.push(doc.complaint_sent_date != '' ? 1 : 0)
 
                             ComplaintFiledCount.push(doc.complaint_filed_date != '' ? 1 : 0)
 
-                            PlacementTillSuit.push( mcomplaintFiledDate > 0 && !isNaN(mdate) ? mcomplaintFiledDate.diff(mdate, "days") : 0)
+
+                            PlacementTillSuit.push( mcomplaintFiledDate != '' && !isNaN(simp_date) ? (mcomplaintFiledDate < simp_date ? 0 : this.dateDiff(simp_date, mcomplaintFiledDate) ) : 0)
                             PlacementTillSuitCount.push(mcomplaintFiledDate != '' ? 1 : 0)
 
-                            ComplaintTillService.push(mcomplaint_summons_served_date && mcomplaintFiledDate ? mcomplaint_summons_served_date.diff(mcomplaintFiledDate, "days") : 0)
+
+                            ComplaintTillService.push(mcomplaint_summons_served_date && mcomplaintFiledDate ? (mcomplaint_summons_served_date < mcomplaintFiledDate ? 0 : this.dateDiff(mcomplaintFiledDate, mcomplaint_summons_served_date) ) : 0)
                             ComplaintTillServiceCount.push(mcomplaint_summons_served_date != '' ? 1 : 0)
 
-                            SuitTillJudgment.push(mcomplaintFiledDate && mjudgment_entered_date ? mjudgment_entered_date.diff(mcomplaintFiledDate, "days") : 0)
+                            SuitTillJudgment.push(mcomplaintFiledDate && mjudgment_entered_date ? this.dateDiff(mcomplaintFiledDate, mjudgment_entered_date) : 0)
                             SuitTillJudgmentCount.push(mjudgment_entered_date != '' ? 1 : 0)
 
-                            PlacedTillJudgment.push(mjudgment_entered_date ? mjudgment_entered_date.diff(mdate, "days") : 0)
+                            PlacedTillJudgment.push(mjudgment_entered_date != '' ? (mjudgment_entered_date < simp_date ? 0 : this.dateDiff(simp_date, mjudgment_entered_date) ) : 0)
                             PlacedTillJudgmentCount.push(mjudgment_entered_date != '' ? 1 : 0)
+
+                            var t1_dateDiffs = new Date()
+                            var time_dateDiffs = t1_dateDiffs.getTime() - t0_dateDiffs.getTime()
+                            dateDiffTime.push(time_dateDiffs)
 
                         }
 
                     })
+
+                    var t1_cases = new Date()
+                    var time_case = t1_cases.getTime() - t0_cases.getTime()
+                    casesTime.push(time_case)
+
+                    
+
 
                     // Add KPIs to vintage array
                     kpis.Vintage = vintage
@@ -672,39 +742,16 @@ export default {
 
                 // console.log(vins)
                 var t1 = new Date()
-                var time = t1.getTime() - t0.getTime() 
+                var time = t1.getTime() - t0.getTime()
+
+                console.log("Cases processing benchmark:", this.sumArray(casesTime), "ms")
+                console.log("Datediff processing benchmark:", this.sumArray(dateDiffTime), "ms")
                 console.log("Vintage data processing benchmark:", time, "ms")
             }
             return vins
         }
     },
-    filters: {
-        percFormat (value) {
-            if(!value) return ''
-            return ((value + 0.00001) * 100).toFixed(2) + '%'
-        },
-        currencyFormat(value) {
-            if(!value) return ''
-            var formatter = new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    minimumFractionDigits: 2
-                })
-            return formatter.format(value)
-        }
-    },
-    watch: {
-        importedJSON: function(val) {
-            // console.log("WATCHER", val)
-            
-        },
-        allCases: function () {
-            // this.filteredData()
-        },
-         value () {
-            this.setWidth()
-        }
-    },
+   
     methods: {
         sumArray (arr) {
             var total = 0
@@ -713,6 +760,13 @@ export default {
             })
             return total
         },
+
+        dateDiff (a, b) {
+            const _MS_PER_DAY = 1000 * 60 * 60 * 24
+            return Math.round((b - a)/ _MS_PER_DAY, 0)
+            
+        },
+
         changeSortDir() {
             this.sortDir = !this.sortDir
         },
@@ -734,6 +788,8 @@ export default {
                         type: 'binary'
                     })
 
+                    // console.log(workbook)
+
                     await workbook.SheetNames.forEach( async (sheetName) => {
                         // Here is your object
                         var XL_row_object = await XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName])
@@ -742,14 +798,21 @@ export default {
 
                         self.importedJSON = await XL_row_object
                         // self.casesArr = await XL_row_object
-                        self.$store.dispatch('getAllCases', { Cases: XL_row_object, isImport: 1 })
+                        self.$store.dispatch('getAllCases', { Cases: XL_row_object, isImport: 1, CallLoc: 'PVinTable.ExcelToJSON' })
                     })
                 }
 
                 reader.onerror = function(ex) {
                     console.log(ex);
                 }
+
+                // console.log("File", file)
+
                 reader.readAsBinaryString(file)
+        },
+
+        pVinColumnCheck(columns) {
+
         }
     }
     

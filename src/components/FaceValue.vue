@@ -1,5 +1,6 @@
 <template>
     <div :input="IDXdbCases">
+    <!-- <div> -->
         <b-card style="max-width: 1000px;margin: 10px auto 0 auto ;">
             <highcharts :options="chartOptions" :data="pVinsArr">                
             </highcharts>            
@@ -133,64 +134,66 @@ export default {
     },
     
    created() {
-        this.$store.dispatch('getAllCases')
+        // this.$store.dispatch('getAllCases', { CallLoc: 'FaceValue created()' })
     },
     computed: {
         ...mapGetters([
             'allCases'
         ]),
           IDXdbCases () {
-            var self = this
-            var dbName = 'Cases'
-            var version = 1
-            var request = indexedDB.open(dbName, version)
 
-            // var request  = []
+            if(this.allCases) {} else {
+                var self = this
+                var dbName = 'Cases'
+                var version = 1
+                var request = indexedDB.open(dbName, version)
 
-            if(request) {
+                // var request  = []
 
-                 request.onsuccess = function (event) {
-                    console.log("IDXdbCases IDXDB On Success")
-                    var db = event.target.result
-                    // console.log(db)
-                
-                    var tx = db.transaction(["Cases"], "readwrite").objectStore("Cases")
-                    // console.log(tx)
-                    tx.onerror = function (event) {
-                        console.log("Transaction Error:", event)
-                    }
-                
-                    var objectStore = tx //.objectStore("Cases")
-         
-                
-                    if(objectStore)  
-                        objectStore.get(0).onsuccess = function (event) {
-                            self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0 }) 
+                if(request) {
+
+                    request.onsuccess = function (event) {
+                        console.log("IDXdbCases IDXDB On Success")
+                        var db = event.target.result
+                        // console.log(db)
+                    
+                        var tx = db.transaction(["Cases"], "readwrite").objectStore("Cases")
+                        // console.log(tx)
+                        tx.onerror = function (event) {
+                            console.log("Transaction Error:", event)
                         }
-                    // db.close()
-                }
-
-                request.onupgradeneeded = function (event) {
-                    console.log(" onupgradeneeded Create IDX DB", dbName)
-                    var db = event.target.result
-                    // var tx = db.transaction('Cases', "readwrite")
-                    // tx.onerror = function (event) {
-                    //     console.log("Transaction Error:", event)
-                    // }
-                    var objStore = db.createObjectStore("Cases")
-                    // db.close()
-                    // var objectStore = tx.objectStore("Cases")
-                    // objStore.add([], 0)
-                }
-                
-  
-                request.onerror = function (event ) {
-                    console.log("Filtered Data IndexedDB Error:", event)
-                    return []
-                }
-             return []
-            }
+                    
+                        var objectStore = tx //.objectStore("Cases")
             
+                    
+                        if(objectStore)  
+                            objectStore.get(0).onsuccess = function (event) {
+                                self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0, CallLoc: 'FaceValue IDXdbCases' }) 
+                            }
+                        // db.close()
+                    }
+
+                    request.onupgradeneeded = function (event) {
+                        console.log(" onupgradeneeded Create IDX DB", dbName)
+                        var db = event.target.result
+                        // var tx = db.transaction('Cases', "readwrite")
+                        // tx.onerror = function (event) {
+                        //     console.log("Transaction Error:", event)
+                        // }
+                        var objStore = db.createObjectStore("Cases")
+                        // db.close()
+                        // var objectStore = tx.objectStore("Cases")
+                        // objStore.add([], 0)
+                    }
+                    
+    
+                    request.onerror = function (event ) {
+                        console.log("Filtered Data IndexedDB Error:", event)
+                        return []
+                    }
+                return []
+                }
+            }
         },
          casesArr() {
             // console.log(this.allCases)

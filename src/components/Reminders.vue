@@ -1,6 +1,6 @@
 <template>
-    <!-- <div :remind="allReminders" :data="filteredData"> -->
-    <div :data="filteredData" :input="IDXdbCases">
+    <div :cases="IDXdbCases" :reminders="IDXdbReminders">
+    <!-- <div> -->
       <b-col v-if="isLoading" >
             <!-- <p style="text-align:left;" ><img class="loader" src="../assets/img/wait-symbol.jpg" style="height:20px;width:20px;"/></p> -->
             <p><i style="font-size: 20px;" class="fas fa-spinner loader"></i></p> <p>Please wait while data is loading.</p>
@@ -24,9 +24,9 @@
                     </label>
                 </div>
 
-                <div>
+                <!-- <div>
                   <button @click="removeLocalData"> Remove Data</button>
-                </div>
+                </div> -->
         
         </b-row>
         
@@ -145,7 +145,6 @@
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex'
 import JsonExcel from 'vue-json-excel'
-import  { moment } from '@/main'
 import download from "downloadjs";
 
 export default {
@@ -189,77 +188,121 @@ export default {
         // this.$store.dispatch('getAllReminders')
 /*REDFLAG*/
 // This dispatch won't be needed after DEV
-        // this.$store.dispatch('getAllCases')
+        this.$store.dispatch('getAllCases', { CallLoc: 'Reminders.created()'})
+        
     },
     computed: {
 
         ...mapGetters([
             'allReminders',
-            'allCases'
+            'allCases',
+            'allCaseIDXs'
         ]),
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* These need to be in the DataStore */
         IDXdbCases () {
-          var self = this
-          var dbName = 'Cases'
-          var version = 1
-          var request = indexedDB.open(dbName, version)
-
-/* REDFLAG */
-// This needs to be commented out 
-          var request  = []
-
-          if(request) {
-
+          // if(this.allCases&&this.allCaseIDXs) {} else {
+          if(this.allCases) {} else {
+            var self = this
+            var dbName = 'Cases'
+            var version = 1
+            var request = indexedDB.open(dbName, version)
+  /* REDFLAG */
+  // This needs to be commented out
+            // var request  = []
+            console.log("UI IDXdbCases IDXDB Running Check")
+            if(request) {
                 request.onsuccess = function (event) {
-                  console.log("IDXdbCases IDXDB On Success")
+                  console.log("UI IDXdbCases IDXDB On Success")
                   var db = event.target.result
-                  // console.log(db)
-              
-                  var tx = db.transaction(["Cases"], "readwrite").objectStore("Cases")
-                  // console.log(tx)
+                  var tx = db.transaction(["Cases", "CaseIDX"], "readwrite")
+                  // var tx_caseIdx = db.transaction(["Cases"], "readwrite")
+
+                  tx.onerror = function (event) {
+                      console.log("Transaction Error:", event)
+                  }
+
+                  var objectStore = tx.objectStore("Cases")
+        
+                
+                  if(objectStore)  
+                      objectStore.get(0).onsuccess = function (event) {
+                          self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 1, CallLoc: 'PVinTable.IDXdbCases' }) 
+                  }
+                  db.close()
+                              
+                }
+                request.onupgradeneeded = function (event) {
+                  console.log("onupgradeneeded Create IDX DB", dbName)
+                  var db = event.target.result
+                  var casesObj = db.createObjectStore("Cases")
+                  var caseIdxObj = db.createObjectStore("CaseIDX")
+                }
+
+                request.onerror = function (event ) {
+                  console.log("Filtered Data IndexedDB Error:", event)
+                  return []
+                }
+              return []
+            }
+          }
+        },
+
+        IDXdbReminders () {
+
+          if(this.allReminders) {} else {
+
+            var self = this
+            var dbName = 'Reminders'
+            var version = 1
+            var request = indexedDB.open(dbName, version)
+  /* REDFLAG */
+  // This needs to be commented out
+            // var request  = []
+            console.log("UI IDXdbReminders IDXDB Running Check")
+            if(request) {
+                request.onsuccess = function (event) {
+                  console.log("UI IDXdbReminders IDXDB On Success")
+                  var db = event.target.result
+                  var tx = db.transaction(["Reminders"], "readwrite").objectStore("Reminders")
+
                   tx.onerror = function (event) {
                       console.log("Transaction Error:", event)
                   }
               
-                  var objectStore = tx //.objectStore("Cases")
-        
-              
+                  var objectStore = tx                
                   if(objectStore)  
                       objectStore.get(0).onsuccess = function (event) {
-                          self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0 }) 
+                          self.$store.dispatch('getAllReminders', { Reminders: event.target.result, isImport: 0 }) 
                       }
-                  // db.close()
-              }
 
-              request.onupgradeneeded = function (event) {
+                  db.close()
+                }
+                request.onupgradeneeded = function (event) {
                   console.log("onupgradeneeded Create IDX DB", dbName)
                   var db = event.target.result
-                  // var tx = db.transaction('Cases', "readwrite")
-                  // tx.onerror = function (event) {
-                  //     console.log("Transaction Error:", event)
-                  // }
-                  var objStore = db.createObjectStore("Cases")
-                  // db.close()
-                  // var objectStore = tx.objectStore("Cases")
-                  // objStore.add([], 0)
-              }
-              
- 
-              request.onerror = function (event ) {
+                  var objStore = db.createObjectStore("Reminders")
+                }
+
+                request.onerror = function (event ) {
                   console.log("Filtered Data IndexedDB Error:", event)
                   return []
-              }
-            return []
+                }
+              return []
+            }
           }
             
         },
-        remindersArr() {
-          
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        remindersArr() {   
             console.log("Computing remindersArr")
-            // console.log("localStorage.Reminders", localStorage.Reminders)
-            // if(localStorage.getItem("Reminders")) return JSON.parse(localStorage.getItem("Reminders"))
-            console.log(this.allReminders)
+            // var cache = this.IDXdbReminders
             if(this.allReminders) return Object.values(this.allReminders)
+            this.IDXdbReminders
             return []
 
         },
@@ -269,28 +312,15 @@ export default {
         casesArr() {
             // console.log(this.allCases)
             if(this.allCases) return Object.values(this.allCases)
-          
+            this.IDXdbCases
             return []
         },
         filteredData() {
 
             this.isLoading = 1
             var t0 = new Date()
-   
-            // if(localStorage.getItem("Reminders")) {
-            //   console.log("localStorage Reminders Used")
-            //   // var reminders = JSON.parse(localStorage.getItem("Reminders"))
-            //   // console.log("reminders", reminders)
-            // } else {
-
-            //   console.log("Imported Reminders Used")
-            //   // if(this.remindersArr) {
-            //   var reminders = this.importedJSON ? this.importedJSON : this.remindersArr
-            // }
 
             var reminders = this.remindersArr
-
-
 
         // Processing time arrays
             var repReminderTime = []
@@ -298,18 +328,16 @@ export default {
             var daysLastTouchTime = []
 
 
-              
+            // console.log("allCaseIDXs", this.allCaseIDXs)
+            // console.log("this.casesArr", this.casesArr)
+
+            var caseIDXs = this.allCaseIDXs ? this.allCaseIDXs : []
+            var cases = this.casesArr
+    
 
 
-
-
-            var cases = this.allCases
-            // var cases = this.casesArr
-            var casesKeys = Object.keys(cases)
-            console.log("Reminders", reminders.length > 0 , "Cases", cases.length > 0) 
-
-
-            if(reminders.length > 0 && cases.length > 0) {
+            console.log("Reminders", reminders.length > 0 , "Cases", cases.length > 0, "CaseIDX",  caseIDXs.length > 0)
+            if(reminders.length > 0 && cases.length > 0 && caseIDXs.length > 0) {
                this.isLoading = 1
             // if(reminders.length > 0) {
                console.log("Processing Reminders")
@@ -334,15 +362,14 @@ export default {
                     // this.isLoading = 1
                     // if(rep) {
                         var kpis = []
-                        var today = moment(new Date())
-                        // var today = new Date()
+                        var today = new Date()                        // var today = new Date()
                         var TotalReminders = []
                         
                         var RemindersPastDueCount = []
                         var PastDueDays = []
                         var PastDueDollar = []
                         
-                        // var TotalCases = cases.filter(doc => {
+                        // var repCases = cases.filter(doc => {
                         //                         return rep == (doc.collector_first_name + " " + doc.collector_last_name)
                         //                     })
 
@@ -359,21 +386,17 @@ export default {
 
                         repReminders.forEach(reminder => {
                         // reminders.forEach(reminder => {
-                          var dueDate = moment(reminder.due_datetime)
+                          var dueDate = new Date(reminder.due_datetime)
                           // var dueDate = new Date(reminder.due_datetime)
 
-   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                          // var caseKey = this.getKeyByValue(this.allCases, reminder.account_number, 'case_number')
-                          // var caseMatch = caseKey ? this.allCases[caseKey] : []                       
-                          var caseMatch_t0 = new Date()
-                          // var caseMatch = []
 
-                          var caseKey = casesKeys.find(key => cases[key]['case_number'] == reminder.account_number)
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                
+                          var caseMatch_t0 = new Date()
+                          // var caseMatch = null
+
+                          var caseKey = caseIDXs[reminder.account_number]
                           var caseMatch = cases[caseKey]
-                 
-                          // var caseMatch = cases.find(doc => {
-                          //                     return doc.case_number == reminder.account_number
-                          //                 })
 
                           var caseMatch_t1 = new Date()
                           var caseMatch_time = caseMatch_t1.getTime() - caseMatch_t0.getTime()
@@ -383,7 +406,7 @@ export default {
 
                           var daysLastTouch_t0 = new Date()
                           if(caseMatch) {
-                            daysLastTouch = today.diff(moment(caseMatch.last_work_date), "days" )
+                            daysLastTouch = this.dateDiff(caseMatch.last_work_date, today)
                             if( daysLastTouch >= 60 ) { this.noTouch60days.push(reminder) }
                             else if( daysLastTouch >= 30 ) { this.noTouch30days.push(reminder) }
                             else if( daysLastTouch >= 5 ) { this.noTouch5days.push(reminder) }                            
@@ -417,7 +440,7 @@ export default {
                                   }   
                                   
                                   
-                                  PastDueDays.push(today.diff(dueDate, "days"))
+                                  PastDueDays.push( this.dateDiff(dueDate, today))
                                   this.pastDueReminders.push(reminder)
                                                             
                               }
@@ -484,6 +507,11 @@ export default {
         removeLocalData() {
 
         },
+        dateDiff (a, b) {
+            const _MS_PER_DAY = 1000 * 60 * 60 * 24
+            return Math.round((b - a)/ _MS_PER_DAY, 0)
+            
+        },
         addCollector(collector) {
             this.collectorToggle.push(collector)
             this.$forceUpdate()
@@ -509,20 +537,20 @@ export default {
                                   return doc.collector == data.Collector
                                 })
             } else if(this.excelReminders=='All') {
-              // console.log("this.excelReminders=='All'")
-              // console.log(data)
+                // console.log("this.excelReminders=='All'")
+                // console.log(data)
                 var reminders = await this.remindersArr.filter(doc => {
                                   return doc.collector == data.Collector
                                 })
-              // console.log(reminders)
+                // console.log(reminders)
             } else if(this.excelReminders=='No Touch - 5 days') { 
-              var reminders = await this.noTouch5days.filter(doc => {
-                                  return doc.collector == data.Collector
-                                })
+                var reminders = await this.noTouch5days.filter(doc => {
+                                    return doc.collector == data.Collector
+                                  })
             } else if(this.excelReminders=='No Touch - 30 days') { 
-              var reminders = await this.noTouch30days.filter(doc => {
-                                  return doc.collector == data.Collector
-                                })
+                var reminders = await this.noTouch30days.filter(doc => {
+                                    return doc.collector == data.Collector
+                                  })
             } else if(this.excelReminders=='No Touch - 60 days') {
                 var reminders = await this.noTouch60days.filter(doc => {
                                   return doc.collector == data.Collector
@@ -577,6 +605,7 @@ export default {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Download to Excel ////////////////////////////////////////////////////////////////////////////////////////////////
+/* Needed to be able to call the functions from the download to excel module */
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     async generate(data) {

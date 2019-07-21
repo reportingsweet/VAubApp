@@ -1,0 +1,14 @@
+{
+    "rsdev": {
+        "awscloudformation": {
+            "AuthRoleName": "reportingsweetdev-rsdev-20190702185151-authRole",
+            "UnauthRoleArn": "arn:aws:iam::171616168771:role/reportingsweetdev-rsdev-20190702185151-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::171616168771:role/reportingsweetdev-rsdev-20190702185151-authRole",
+            "Region": "us-east-1",
+            "DeploymentBucketName": "reportingsweetdev-rsdev-20190702185151-deployment",
+            "UnauthRoleName": "reportingsweetdev-rsdev-20190702185151-unauthRole",
+            "StackName": "reportingsweetdev-rsdev-20190702185151",
+            "StackId": "arn:aws:cloudformation:us-east-1:171616168771:stack/reportingsweetdev-rsdev-20190702185151/f55a89a0-9d1b-11e9-b753-0a9f1235b826"
+        }
+    }
+}

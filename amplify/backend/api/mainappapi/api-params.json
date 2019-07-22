@@ -1,0 +1,34 @@
+{
+    "paths": [
+        {
+            "name": "/PlacementVintages",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
+        }
+    ],
+    "resourceName": "mainappapi",
+    "apiName": "mainappapi",
+    "functionArns": [
+        {
+            "lambdaFunction": "mainlambda"
+        }
+    ],
+    "privacy": {
+        "auth": 0,
+        "unauth": 0,
+        "authRoleName": "reportingsweetdev-rsdev-20190702185151-authRole",
+        "unAuthRoleName": "reportingsweetdev-rsdev-20190702185151-unauthRole"
+    },
+    "dependsOn": [
+        {
+            "category": "function",
+            "resourceName": "mainlambda",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        }
+    ]
+}

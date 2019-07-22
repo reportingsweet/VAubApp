@@ -1,12 +1,15 @@
 var AWS = require('aws-sdk')
 var dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
 
+import { API } from 'aws-amplify'
+
 // initial state
 const state = {
     allReminders: {},
     allCases: {},
     allCaseIDXs: [],
-    allPayments: {}
+    allPayments: {},
+    testPVins: {}
 }
 
 // getters
@@ -14,13 +17,30 @@ const getters = {
     allReminders: state => { return state.allReminders },
     allCases: state => { return state.allCases },
     allCaseIDXs: state => { return state.allCaseIDXs },
-    allPayments: state => { return state.allPayments }
+    allPayments: state => { return state.allPayments },
+    testPVins: state => { return state.testPVins }
 }
 
 // actions
 const actions = {
 
   async postCases({ state, commit, rootState }, payload) {
+
+  },
+
+  async getTestPVins({state, commit, rootState }, payload) {
+
+    try {
+
+      const pVins = API.get('mainappapi', '/PlacementVintages')
+      console.log("pVins FROM AWS", pVins)
+
+      commit('SET_P_VINS', { pVins: pVins })
+
+    } catch(err) {
+      console.log(err)
+    }
+
 
   },
 
@@ -186,6 +206,9 @@ const actions = {
 
 // mutations
 const mutations = {
+  SET_P_VINS: (state, { pVins }) => {
+    state.testPVins = pVins
+  },
   SET_ALL_REMINDERS: (state, { reminders }) => {
     state.allReminders = reminders
   },

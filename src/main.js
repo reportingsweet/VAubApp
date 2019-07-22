@@ -16,6 +16,11 @@ import moment from 'moment'
 
 import VueRouter from 'vue-router'
 
+import Amplify from 'aws-amplify'
+import config from './aws-exports'
+
+Amplify.configure(config)
+
 /* 
 * Workaround for render error with vue-router 
 */

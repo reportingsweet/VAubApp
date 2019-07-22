@@ -396,6 +396,7 @@ export default {
 
     created() {
         this.$store.dispatch('getAllCases', { CallLoc: 'PVinTable.created()'})
+        this.$store.dispatch('getTestPVins')
     },
     
     computed: {

@@ -31,17 +31,17 @@ app.use(function(req, res, next) {
 });
 
 
-import axios from 'axios'
+// import axios from 'axios'
   // or 
 
-var axios = require('axios')
+// var axios = require('axios')
 
 
 /**********************
  * Example get method *
  **********************/
 
-app.get('g/PlacementVintages', function(req, res) {
+app.get('/g/PlacementVintages', function(req, res) {
   // Add your code here
 
  const placementVins = [{ Vintage: '2019-01-01', Dollars: '1000000.00' }]
@@ -52,15 +52,12 @@ app.get('g/PlacementVintages', function(req, res) {
   console.log("INSIDE THE EXPRESS API")
 
   res.json({success: 'get call succeed!', url: req.url, placementVins })
-
-
-  
 });
 
-app.get('/PlacementVintages/*', function(req, res) {
-  // Add your code here
-  res.json({success: 'get call succeed!', url: req.url});
-});
+// app.get('/PlacementVintages/*', function(req, res) {
+//   // Add your code here
+//   res.json({success: 'get call succeed!', url: req.url});
+// });
 
 /****************************
 * Example post method *
@@ -68,17 +65,28 @@ app.get('/PlacementVintages/*', function(req, res) {
 
 
 
-
 const AWS = require('aws-sdk')
-const db = new AWS.DynamoDB.DocumentClient({ region: 'eu-east-1'})
+const db = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1'})
 
-app.post('p/PlacementVintages', function(req, res) {
+const dynamo_config = require('./Dynamo/config.js')
+
+
+
+app.post('/p/PlacementVintages', function(req, res) {
   // Add your code here
+
+  AWS.config.update(dynamo_config.aws_local_config)
+
+  console.log("AMPLIFY API!!")
 
   const params = {
     TableName: 'PlacementVintages',
     Item: req.body
   }
+
+  // db.put(params, function(err, data) {
+
+  // })
 
 
   res.json({success: 'post call succeed!', url: req.url, body: req.body})

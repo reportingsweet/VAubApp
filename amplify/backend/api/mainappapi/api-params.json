@@ -1,7 +1,14 @@
 {
     "paths": [
         {
-            "name": "/PlacementVintages",
+            "name": "/p/PlacementVintages",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
+        },
+        {
+            "name": "/g/PlacementVintages",
             "lambdaFunction": "mainlambda",
             "privacy": {
                 "open": true
@@ -30,5 +37,6 @@
                 "Arn"
             ]
         }
-    ]
+    ],
+    "uuid": "61cd4795"
 }

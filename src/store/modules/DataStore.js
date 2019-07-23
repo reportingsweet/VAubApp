@@ -32,10 +32,34 @@ const actions = {
 
     try {
 
-      const pVins = API.get('mainappapi', '/PlacementVintages')
+      const pVins = API.get('mainappapi', '/g/PlacementVintages')
+
+
       console.log("pVins FROM AWS", pVins)
 
       commit('SET_P_VINS', { pVins: pVins })
+
+    } catch(err) {
+      console.log(err)
+    }
+
+
+  },
+
+  async postTestPVins({state, commit, rootState }, payload) {
+
+    try {
+
+      let data = JSON.stringify(payload.data)
+
+      let myInit = {
+        body: data,
+        headers: {}
+      }
+
+      const pVins = API.post('mainappapi', '/p/PlacementVintages', data)
+
+      console.log("POST PlacementVintages", pVins)
 
     } catch(err) {
       console.log(err)

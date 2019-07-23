@@ -1,6 +1,12 @@
 <template>
     <div :input="IDXdbCases">
     <!-- <div> -->
+
+
+
+        <b-btn @click="postPlacements">DYNAMO</b-btn>
+
+
         <div style=" text-align:left; max-width:600px;min-width:600px;" class="grid">            
             <b-col style="max-width:400px;min-width:400px;" class="col1">
 
@@ -754,6 +760,11 @@ export default {
     },
    
     methods: {
+
+        postPlacements () {
+            console.log("this.sortedData", this.sortedData)
+            this.$store.dispatch('postTestPVins', { data: this.sortedData})
+        },
         sumArray (arr) {
             var total = 0
             arr.forEach(a => {

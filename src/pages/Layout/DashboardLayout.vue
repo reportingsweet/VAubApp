@@ -11,7 +11,7 @@
       <br>
       <mobile-menu slot="content"></mobile-menu>
 
-      <!-- <sidebar-link to="/Placement">
+      <sidebar-link to="/Placement">
         <md-icon>dashboard</md-icon>
         <p>Placement</p>
       </sidebar-link>
@@ -29,7 +29,7 @@
        <sidebar-link to="/FaceValue">
         <md-icon>monetization_on</md-icon>
         <p>Face Value</p>
-      </sidebar-link> -->
+      </sidebar-link>
 
       <sidebar-link to="/DataLoad">
         <md-icon class="material-icons">swap_vertical_circle</md-icon>

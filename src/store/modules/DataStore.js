@@ -44,17 +44,28 @@ const actions = {
 
     console.log(payload)
 
-    var data = await pako.gzip(JSON.stringify(payload.Data))
-    var dataSource = await pako.gzip(JSON.stringify(payload.DataSource))
+    // var data = await pako.gzip(JSON.stringify(payload.Data))
+    // var dataSource = await pako.gzip(JSON.stringify(payload.DataSource))
+    // // var data = await JSON.stringify(payload.Data)
+    // console.log("GZIP", data)
+
+    // let myInit = {
+    //   body: { Data: data.toString("base64"), DataSource: dataSource.toString("base64") },
+    //   // body: { Data: '', DataSource: '' },
+    //   isBase64Encoded: true,
+    //   headers: {
+    //     "Content-Encoding": 'gzip'
+    //   }
+    // }
+
+    var data = await JSON.stringify(payload.Data)
+    var dataSource = await JSON.stringify(payload.DataSource)
     // var data = await JSON.stringify(payload.Data)
     console.log("GZIP", data)
 
     let myInit = {
-      body: { Data: data.toString("base64"), DataSource: dataSource.toString("base64") },
-      // body: { Data: '', DataSource: '' },
-      isBase64Encoded: true,
+      body: { Data: data, DataSource: dataSource },
       headers: {
-        "Content-Encoding": 'gzip'
       }
     }
 

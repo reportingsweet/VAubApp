@@ -9,6 +9,11 @@
             "UnauthRoleName": "reportingsweetdev-rsdev-20190702185151-unauthRole",
             "StackName": "reportingsweetdev-rsdev-20190702185151",
             "StackId": "arn:aws:cloudformation:us-east-1:171616168771:stack/reportingsweetdev-rsdev-20190702185151/f55a89a0-9d1b-11e9-b753-0a9f1235b826"
+        },
+        "categories": {
+            "function": {
+                "mainlambda": {}
+            }
         }
     }
 }

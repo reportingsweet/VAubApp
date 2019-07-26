@@ -4,12 +4,12 @@ module.exports = {
 
   aws_local_config: {
     region: 'local',
-    endpoint: 'http://localhost:8000'
+    endpoint: 'http://localhost:3002'
   },
 
   aws_remote_config: {
-    accessKeyId: 'AKIASP5I65NBY2BX5FFZ',
-    secretAccessKey: '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',
+    accessKeyId: '',
+    secretAccessKey: '',
     region: 'us-east-1',
   }
 

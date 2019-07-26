@@ -6,6 +6,10 @@
 
         <b-btn @click="postPlacements">DYNAMO</b-btn>
 
+        <br />
+        <br />
+
+        <b-btn @click="deletePlacements">DYNAMO_Delete</b-btn>
 
         <div style=" text-align:left; max-width:600px;min-width:600px;" class="grid">            
             <b-col style="max-width:400px;min-width:400px;" class="col1">
@@ -402,7 +406,7 @@ export default {
 
     created() {
         this.$store.dispatch('getAllCases', { CallLoc: 'PVinTable.created()'})
-        this.$store.dispatch('getTestPVins')
+        this.$store.dispatch('getPVins')
     },
     
     computed: {
@@ -762,9 +766,69 @@ export default {
     methods: {
 
         postPlacements () {
-            console.log("this.sortedData", this.sortedData)
-            this.$store.dispatch('postTestPVins', { data: this.sortedData})
+
+            let data = [{
+                            Vintage: '2019-01-01', 
+                            UnitYeild: '1',
+                            TotalOriginalClaimAmt: '',
+                            TotalFees: '',
+                            TotalCollectedCalc: '',
+                            TotalOriginalClaimAmt: '',
+                            SuitTillJudgment: '',
+                            SuitRate: '',
+                            SuedCount: '',
+                            ServedCount: '',
+                            ServedConvRate: '',
+                            RecentPmtPct: '',
+                            PlacedTillJudgment: '',
+                            OpenFiles: '',
+                            NetLiquidation: '',
+                            LocalCounselRate: '',
+                            Liquidation: '',
+                            JmtRate: '',
+                            JmtCount: '',
+                            FileCount: '',
+                            FaceValue: '',
+                            ContingencyRate: '',
+                            ComplaintTillService: '',
+                            ClosedFiles: '',
+                            AvgPlacementTillSuit: ''
+
+                        },
+                          { Vintage: '2019-01-01', 
+                            UnitYeild: '1',
+                            TotalOriginalClaimAmt: '',
+                            TotalFees: '',
+                            TotalCollectedCalc: '',
+                            TotalOriginalClaimAmt: '',
+                            SuitTillJudgment: '',
+                            SuitRate: '',
+                            SuedCount: '',
+                            ServedCount: '',
+                            ServedConvRate: '',
+                            RecentPmtPct: '',
+                            PlacedTillJudgment: '',
+                            OpenFiles: '',
+                            NetLiquidation: '',
+                            LocalCounselRate: '',
+                            Liquidation: '',
+                            JmtRate: '',
+                            JmtCount: '',
+                            FileCount: '',
+                            FaceValue: '',
+                            ContingencyRate: '',
+                            ComplaintTillService: '',
+                            ClosedFiles: '',
+                            AvgPlacementTillSuit: ''}]
+
+            // console.log("this.sortedData", this.sortedData)
+            this.$store.dispatch('postPVins', { data: this.sortedData })
         },
+
+        deletePlacements () {
+            this.$store.dispatch('deletePVins')
+        },
+
         sumArray (arr) {
             var total = 0
             arr.forEach(a => {

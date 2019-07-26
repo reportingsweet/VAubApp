@@ -13,6 +13,27 @@
             "privacy": {
                 "open": true
             }
+        },
+        {
+            "name": "/d/PlacementVintages",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
+        },
+        {
+            "name": "/g/TableList",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
+        },
+        {
+            "name": "/p/DataTable",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
         }
     ],
     "resourceName": "mainappapi",
@@ -38,5 +59,5 @@
             ]
         }
     ],
-    "uuid": "61cd4795"
+    "uuid": "d325ee8e"
 }

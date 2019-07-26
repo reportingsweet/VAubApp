@@ -20,6 +20,7 @@ import TableList from '@/pages/TableList.vue'
 import Typography from '@/pages/Typography.vue'
 import Icons from '@/pages/Icons.vue'
 import Notifications from '@/pages/Notifications.vue'
+import DataLoad from '@/pages/DataLoad.vue'
 
 // import Maps from '@/pages/Maps.vue'
 // import UpgradeToPRO from '@/pages/UpgradeToPRO.vue'
@@ -65,6 +66,11 @@ let router = new Router({
       component: DashboardLayout,
       // redirect: '/dash',
       children: [
+        {
+          path: '/DataLoad',
+          name: 'Data Load',
+          component: DataLoad
+        },
         {
           path: '/Placement',
           name: 'Placement Vintages',

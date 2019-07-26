@@ -1,12 +1,37 @@
 <template>
   <div class="login">
-    <amplify-authenticator></amplify-authenticator>
-    <amplify-sign-out></amplify-sign-out>
+      <b-row>
+        <b-col sm="4" id="group">
+          <!-- <img src="../assets/apartmentslogo.png" style="margin: auto;"/> -->
+          <h3>Please Login</h3>
+          <b-form-group class="mb-0">
+              <b-form-input type="text" placeholder="Email" v-model="email" /><br>
+              <b-form-input @keyup.enter="login" type="password" placeholder="Password" v-model="password" /><br>
+              <b-btn @click="login">Login</b-btn>
+          </b-form-group>
+        </b-col>
+      </b-row>
+      <br>
+      <b-row>
+          <!-- -->
+          <b-col v-if="waitMsg" >
+              <!-- <p style="text-align:left;" ><img class="loader" src="../assets/img/wait-symbol.jpg" style="height:20px;width:20px;"/></p> -->
+              <p><i style="font-size: 50px;" class="fas fa-spinner loader"></i></p>
+
+          </b-col>
+        
+      </b-row>    
+      <b-row>
+          <b-col>
+              <a v-if="waitMsg">Please wait while Dash loads</a>
+              <!-- <a>Please wait while Dash loads</a> -->
+          </b-col>        
+      </b-row>
   </div>
 </template>
 
 <script>
-import { Auth } from 'aws-amplify'
+// import firebase from 'firebase'
 
 export default {
   name: 'Login',

@@ -11,9 +11,7 @@
       <br>
       <mobile-menu slot="content"></mobile-menu>
 
-      <!-- <br> -->
-
-      <sidebar-link to="/Placement">
+      <!-- <sidebar-link to="/Placement">
         <md-icon>dashboard</md-icon>
         <p>Placement</p>
       </sidebar-link>
@@ -31,6 +29,11 @@
        <sidebar-link to="/FaceValue">
         <md-icon>monetization_on</md-icon>
         <p>Face Value</p>
+      </sidebar-link> -->
+
+      <sidebar-link to="/DataLoad">
+        <md-icon class="material-icons">swap_vertical_circle</md-icon>
+        <p>Data</p>
       </sidebar-link>
       
 
@@ -134,6 +137,7 @@ import Placement from '@/pages/Placement'
 import FaceValue from '@/pages/Placement'
 import Liquidation from '@/pages/Placement'
 import Reminders from '@/pages/Placement'
+import DataLoad from '@/pages/DataLoad'
 // import { FaceValue, Liquidation, Reminders } from '@/pages'
 
 export default {
@@ -153,6 +157,7 @@ export default {
     Placement,
     Liquidation,
     FaceValue,
+    DataLoad
     // appHeader: Header
   },
   mounted () {
@@ -175,6 +180,9 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
+  /* .main-panel{
+    height: 500px;
+  } */
 </style>

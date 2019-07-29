@@ -53,7 +53,7 @@
                 </b-btn> 
       </div>
 
-      <div v-if="action=='Insert'">
+      <div v-if="action=='Insert'||action=='Update'">
 
         <br>
 
@@ -86,7 +86,7 @@
 
     </div>
 
-    <div v-if="action=='Insert'">
+    <div v-if="action=='Insert'||action=='Update'">
       <div>LOADED DATA:</div>
       <br>
       <div v-if="loadedData.length>0" style="width: 1000px; height: 500px;overflow: scroll;margin: auto;">

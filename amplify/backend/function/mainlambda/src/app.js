@@ -35,8 +35,12 @@ app.use(compression())
 
 // Enable CORS for all methods
 app.use(function(req, res, next) {
+
   res.header("Access-Control-Allow-Origin", "*")
+  
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+
+
   next()
 });
 
@@ -128,7 +132,11 @@ app.post('/p/DataTable', async function(req, res) {
 
   var response = await db_funcs.postDataTable(req, res).then(data => { return data })
 
-  res.send({success: 'postDataTable call succeed!', url: req.url, body: response })
+  var success = await response.includes('ERROR') ? false : true
+
+
+
+  res.send({success: success, url: req.url, body: response })
 
 
 })

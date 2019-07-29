@@ -7,6 +7,8 @@ const dynamo_config = require('../Dynamo/config.js')
 const pako = require('pako')
 const zlib = require('zlib')
 
+var atob = require('atob')
+
 
 /********************************************************************************************************
 * GET FUNCTIONS *
@@ -53,16 +55,39 @@ var listTables = async (req, res) => {
 ********************************************************************************************************/
 
 
-
+// import { TextEncoder, TextDecoder } from 'util'
 
 var postDataTable = async (req, res) => {
 
-  var data = await zlib.unzip(JSON.parse(req.body.Data))
+  var step = []
+  try {
 
+    // const denc = await new TextDecoder()
 
-  
+    await step.push(1)
+    var str = await atob(req.body.Data)
 
-  return data
+    await step.push(2)
+    var charData = await str.split('').map(function(x){return x.charCodeAt(0) })
+
+    await step.push(3)
+    var binData = await new Uint8Array(charData)
+
+    await step.push(4)
+    var uncompressed = await pako.inflate(binData, { to: 'string' })
+
+    await step.push(5)
+    let decoded = await uncompressed //String.fromCharCode.apply(null, new Uint16Array(uncompressed))
+    // let decoded = await denc.decode(uncompressed)
+
+    await step.push(6)
+    let data = await decoded // JSON.parse(decoded) //JSON.parse(decoded)
+
+    return data
+
+  } catch (e) {
+    return "DATA UNZIP ERROR: " + e + " " + step
+  }
 
 }
 

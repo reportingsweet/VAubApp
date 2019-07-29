@@ -42,35 +42,43 @@ const actions = {
 
   async postDataTable ({ state, commit, rootState }, payload) {
 
-    console.log(payload)
+    // console.log(payload)
 
-    // var data = await pako.gzip(JSON.stringify(payload.Data))
-    // var dataSource = await pako.gzip(JSON.stringify(payload.DataSource))
+    // const enc = await new TextEncoder("utf-8")
+
+    // var data = await pako.deflate(unescape(encodeURIComponent(JSON.stringify(payload.Data))))
+    // var dataSource = await pako.deflate(unescape(encodeURIComponent(JSON.stringify(payload.DataSource))))
+    
+    var data = await btoa(pako.deflate(JSON.stringify(payload.Data), { to: 'string' }))
+    var dataSource = await btoa(pako.deflate(JSON.stringify(payload.DataSource)))
+
     // // var data = await JSON.stringify(payload.Data)
-    // console.log("GZIP", data)
-
-    // let myInit = {
-    //   body: { Data: data.toString("base64"), DataSource: dataSource.toString("base64") },
-    //   // body: { Data: '', DataSource: '' },
-    //   isBase64Encoded: true,
-    //   headers: {
-    //     "Content-Encoding": 'gzip'
-    //   }
-    // }
-
-    var data = await JSON.stringify(payload.Data)
-    var dataSource = await JSON.stringify(payload.DataSource)
-    // var data = await JSON.stringify(payload.Data)
     console.log("GZIP", data)
 
     let myInit = {
       body: { Data: data, DataSource: dataSource },
-      headers: {
-      }
+      isBase64Encoded: true,
+      // headers: {
+      //   "Content-Encoding": 'gzip'
+      // }
     }
 
+
+    // var data = await JSON.stringify(payload.Data)
+    // var dataSource = await JSON.stringify(payload.DataSource)
+    // var data = await JSON.stringify(payload.Data)
+    // console.log("GZIP", data)
+
+    // let myInit = {
+    //   body: { Data: data, DataSource: dataSource },
+    //   headers: {
+    //   }
+    // }
+
+
+
     var dataPost = await API.post('mainappapi', '/p/DataTable', myInit)
-      .catch(err => { console.log("postDataTable Error:", err)})
+      .catch(err => { console.log("postDataTable Error:", err) })
 
     commit('SET_API_RESPONSE', { response: dataPost })
 

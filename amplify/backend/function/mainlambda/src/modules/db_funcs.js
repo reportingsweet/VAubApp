@@ -11,6 +11,75 @@ var atob = require('atob')
 
 
 /********************************************************************************************************
+* HANDLER FUNCTIONS *
+********************************************************************************************************/
+
+var postAllDataTable = async (req, res, data, dataSource) => {
+  var placements = await JSON.parse(data)
+
+  console.log("POST TO DYNAMO DB", placements.length)
+  
+  var today = new Date()
+  
+  for(var i = 0; i < placements.length; i++) {
+
+      var params = await {
+        TableName: 'All_Data',
+        Item: {
+          "internal_case_id":  { S: String(placements[i].internal_case_id) },
+          "account_received_date": { S: String(placements[i].account_received_date) },
+          "account_type": { S: String(placements[i].account_type) },
+          "charged_off_date": { S: String(placements[i].charged_off_date) },
+
+          "client_claim_number": { S: String(placements[i].client_claim_number) },
+          "collector_first_name": { S: String(placements[i].collector_first_name) },
+          "collector_last_name": { S: String(placements[i].collector_last_name) },
+          "date_entered_in_simplicity": { S: String(placements[i].date_entered_in_simplicity) },
+          "is_closed": { S: String(placements[i].is_closed) },
+          "last_work_date": { S: String(placements[i].last_work_date) },
+          "original_creditor": { S: String(placements[i].original_creditor) },
+
+          "originated_date": { S: String(placements[i].originated_date) },
+          "codebtor_city": { S: String(placements[i].codebtor_city) },
+          "codebtor_state": { S: String(placements[i].codebtor_state) },
+          "codebtor_zip": { S: String(placements[i].codebtor_zip) },
+          "debtor_city": { S: String(placements[i].debtor_city) },
+          "debtor_state": { S: String(placements[i].debtor_state) },
+          "debtor_zip": { S: String(placements[i].debtor_zip) },
+          "current_balance_due": { S: String(placements[i].current_balance_due) },
+          "interest_start_date": { S: String(placements[i].interest_start_date) },
+          "original_claim_amount": { S: String(placements[i].original_claim_amount) },
+          "original_claim_interest_rate": { S: String(placements[i].original_claim_interest_rate) },
+          "total_claim_amount": { S: String(placements[i].total_claim_amount) },
+          "creditor": { S: String(placements[i].creditor) },
+          "complaint_filed_date": { S: String(placements[i].complaint_filed_date) },
+          "current_fees": { S: String(placements[i].current_fees) },
+          "client_name": { S: String(placements[i].client_name) },
+          "lit_or_bk": { S: String(placements[i].lit_or_bk) },
+          "case_number": { S: String(placements[i].case_number) },
+          "current_claim_status": { S: String(placements[i].current_claim_status) },
+          "total_payments": { S: String(placements[i].total_payments) },
+       
+        }
+      }
+
+      await db.putItem(params, function(err, data) {
+        if(err) {
+          console.log(err)
+          if(res) res.send({ success: 'fail', message: 'Error: Server Error' + err })
+        }
+        else { console.log('data', data) }
+      })
+
+      if(i == placements.length - 1) {
+        if(res) res.send({success: 'post call succeed!', url: req.url , body: JSON.stringify(placements.length)})
+      }
+
+  }
+}
+
+
+/********************************************************************************************************
 * GET FUNCTIONS *
 ********************************************************************************************************/
 
@@ -57,6 +126,8 @@ var listTables = async (req, res) => {
 
 // import { TextEncoder, TextDecoder } from 'util'
 
+var Zlib = require('zlib')
+
 var postDataTable = async (req, res) => {
 
   var step = []
@@ -65,25 +136,39 @@ var postDataTable = async (req, res) => {
     // const denc = await new TextDecoder()
 
     await step.push(1)
-    var str = await atob(req.body.Data)
+    var str = await req.body.Data
 
-    await step.push(2)
-    var charData = await str.split('').map(function(x){return x.charCodeAt(0) })
+    if (req.body.DataSource == 'All_Data') {
+      var dataSource = "All_Data"
+      postAllDataTable(req, res, str, dataSource)
+    } else if(req.body.DataSource == 'Tickler_Report') {
+      var dataSource = "Tickler_Report"
+    } else if(req.body.DataSource == 'Acct_Summary') {
+      var dataSource = "Acct_Summary"
+    } else {
 
-    await step.push(3)
-    var binData = await new Uint8Array(charData)
+    }
 
-    await step.push(4)
-    var uncompressed = await pako.inflate(binData, { to: 'string' })
+    // await step.push(2)
+    // var charData = await str //.split('').map(function(e) { return e.charCodeAt(0) }) //.split('').map(function(x){return x.charCodeAt(0) })
 
-    await step.push(5)
-    let decoded = await uncompressed //String.fromCharCode.apply(null, new Uint16Array(uncompressed))
+    // await step.push(3)
+    // var binData = await charData //new Uint8Array(charData)
+
+    // await step.push(4)
+    // var uncompressed = await zlib.unzip(binData, function(error, result) {
+    //   if (error) throw error
+    //   return result.toString()
+    // })
+
+    // await step.push(5)
+    // let decoded = await uncompressed //String.fromCharCode.apply(null, new Uint16Array(uncompressed))
     // let decoded = await denc.decode(uncompressed)
 
     await step.push(6)
-    let data = await decoded // JSON.parse(decoded) //JSON.parse(decoded)
+    // let data = await { Data: JSON.stringify(str), DataSource: JSON.stringify(req.body.DataSource) }// JSON.parse(decoded)
 
-    return data
+    // return dataSource
 
   } catch (e) {
     return "DATA UNZIP ERROR: " + e + " " + step

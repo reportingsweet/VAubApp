@@ -40,28 +40,60 @@ const actions = {
     
   },
 
+  
+  
+
   async postDataTable ({ state, commit, rootState }, payload) {
 
-    // console.log(payload)
+   
+    var data = []
+    var dataSource = await payload.DataSource
 
-    // const enc = await new TextEncoder("utf-8")
+    console.log(payload.Data)
 
-    // var data = await pako.deflate(unescape(encodeURIComponent(JSON.stringify(payload.Data))))
+    for(var i = 0; i < payload.Data.length; i++) {
+      data.push(payload.Data[i])
+
+      if(i == payload.Data.length-1) {
+
+        console.log("GZIP", data)
+
+        let myInit = {
+          body: { Data: JSON.stringify(data), DataSource: dataSource },
+          // body: { Data: data },
+          // isBase64Encoded: true,
+          // headers: {
+          //   "Content-Encoding": 'gzip'
+          // }
+        }
+
+        var dataPost = await API.post('mainappapi', '/p/DataTable', myInit)
+          .catch(err => { console.log("postDataTable Error:", err) })
+
+        commit('SET_API_RESPONSE', { response: dataPost })
+
+      }
+    }
     // var dataSource = await pako.deflate(unescape(encodeURIComponent(JSON.stringify(payload.DataSource))))
     
-    var data = await btoa(pako.deflate(JSON.stringify(payload.Data), { to: 'string' }))
-    var dataSource = await btoa(pako.deflate(JSON.stringify(payload.DataSource)))
+    // var data = await btoa(zlib.deflate(JSON.stringify(payload.Data), function(error, result) {
+    //   if (error) throw error
+    //   return result
+    // }))
+
+   
 
     // // var data = await JSON.stringify(payload.Data)
-    console.log("GZIP", data)
+    
 
-    let myInit = {
-      body: { Data: data, DataSource: dataSource },
-      isBase64Encoded: true,
-      // headers: {
-      //   "Content-Encoding": 'gzip'
-      // }
-    }
+
+    // data = await atob(data)
+    // data = await pako.inflate(data, { to: 'string' })
+    // data = await JSON.parse(data)
+
+
+
+    // console.log("uncompressed", data)
 
 
     // var data = await JSON.stringify(payload.Data)
@@ -77,10 +109,7 @@ const actions = {
 
 
 
-    var dataPost = await API.post('mainappapi', '/p/DataTable', myInit)
-      .catch(err => { console.log("postDataTable Error:", err) })
-
-    commit('SET_API_RESPONSE', { response: dataPost })
+    
 
   },
 

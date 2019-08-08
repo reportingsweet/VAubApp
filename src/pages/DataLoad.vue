@@ -136,7 +136,7 @@ export default {
   methods: {
     async submitAction() {
 
-      await this.$store.dispatch('postDataTable', { Data: this.loadedData[0], DataSource: this.dataSource })
+      await this.$store.dispatch('postDataTable', { Data: this.loadedData, DataSource: this.dataSource })
       this.loadedData = []
     },
     clearDropDown (dropDown) {

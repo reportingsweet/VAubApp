@@ -169,11 +169,13 @@ const actions = {
         if(i == payload.data.length-1) {
           data = JSON.stringify(data)
           let myInit = {
-            body: { data: data },
+            body: { Data: data },
             headers: {}
           }
           const pVins = API.post('mainappapi', '/p/PlacementVintages', myInit)
-          console.log("POST PlacementVintages", pVins)
+              .catch(err => { console.log("postPVins Error:", err) })
+
+          commit('SET_API_RESPONSE', { response: pVins })
         }
       }
     } catch(err) {

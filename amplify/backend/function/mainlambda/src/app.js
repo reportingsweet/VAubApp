@@ -86,12 +86,244 @@ app.listen(3002, async function() {
         "case_number":"2015-0001",
         "current_claim_status":"Late Payment",
         "total_payments":"$0.00 "
-      }]
+      }, 
+      {
+        "internal_case_id":"2",
+        "account_received_date":"5/8/15",
+        "account_type":"COMM",
+        "charged_off_date":"1/30/15",
+        "client_claim_number":"129505",
+        "collector_first_name":"Vinnie",
+        "collector_last_name":"Aubrey",
+        "date_entered_in_simplicity":"5/10/15",
+        "is_closed":"Open",
+        "last_work_date":"1/16/19",
+        "original_creditor":"CCAS",
+        "originated_date":"8/25/14",
+        "codebtor_city":"Kennesaw",
+        "codebtor_state":"GA",
+        "codebtor_zip":"30152",
+        "debtor_city":"Kennesaw",
+        "debtor_state":"GA",
+        "debtor_zip":"30152",
+        "current_balance_due":"$77,604.95 ",
+        "interest_start_date":"8/24/15",
+        "original_claim_amount":"$57,855.00 ",
+        "original_claim_interest_rate":"10",
+        "total_claim_amount":"$57,855.00 ",
+        "creditor":"CCAS",
+        "complaint_filed_date":"11/9/17",
+        "current_fees":"$0.00 ",
+        "client_name":"Short name",
+        "lit_or_bk":"Lit",
+        "case_number":"2015-0001",
+        "current_claim_status":"Late Payment",
+        "total_payments":"$0.00 "
+      },
+      {
+        "internal_case_id":"4",
+        "account_received_date":"5/8/15",
+        "account_type":"COMM",
+        "charged_off_date":"1/30/15",
+        "client_claim_number":"129505",
+        "collector_first_name":"Vinnie",
+        "collector_last_name":"Aubrey",
+        "date_entered_in_simplicity":"5/10/15",
+        "is_closed":"Open",
+        "last_work_date":"1/16/19",
+        "original_creditor":"CCAS",
+        "originated_date":"8/25/14",
+        "codebtor_city":"Kennesaw",
+        "codebtor_state":"GA",
+        "codebtor_zip":"30152",
+        "debtor_city":"Kennesaw",
+        "debtor_state":"GA",
+        "debtor_zip":"30152",
+        "current_balance_due":"$77,604.95 ",
+        "interest_start_date":"8/24/15",
+        "original_claim_amount":"$57,855.00 ",
+        "original_claim_interest_rate":"10",
+        "total_claim_amount":"$57,855.00 ",
+        "creditor":"CCAS",
+        "complaint_filed_date":"11/9/17",
+        "current_fees":"$0.00 ",
+        "client_name":"Short name",
+        "lit_or_bk":"Lit",
+        "case_number":"2015-0001",
+        "current_claim_status":"Late Payment",
+        "total_payments":"$0.00 "
+      },
+      {
+        "internal_case_id":"5",
+        "account_received_date":"5/8/15",
+        "account_type":"COMM",
+        "charged_off_date":"1/30/15",
+        "client_claim_number":"129505",
+        "collector_first_name":"Vinnie",
+        "collector_last_name":"Aubrey",
+        "date_entered_in_simplicity":"5/10/15",
+        "is_closed":"Open",
+        "last_work_date":"1/16/19",
+        "original_creditor":"CCAS",
+        "originated_date":"8/25/14",
+        "codebtor_city":"Kennesaw",
+        "codebtor_state":"GA",
+        "codebtor_zip":"30152",
+        "debtor_city":"Kennesaw",
+        "debtor_state":"GA",
+        "debtor_zip":"30152",
+        "current_balance_due":"$77,604.95 ",
+        "interest_start_date":"8/24/15",
+        "original_claim_amount":"$57,855.00 ",
+        "original_claim_interest_rate":"10",
+        "total_claim_amount":"$57,855.00 ",
+        "creditor":"CCAS",
+        "complaint_filed_date":"11/9/17",
+        "current_fees":"$0.00 ",
+        "client_name":"Short name",
+        "lit_or_bk":"Lit",
+        "case_number":"2015-0001",
+        "current_claim_status":"Late Payment",
+        "total_payments":"$0.00 "
+      },
+      {
+        "internal_case_id":"6",
+        "account_received_date":"5/8/15",
+        "account_type":"COMM",
+        "charged_off_date":"1/30/15",
+        "client_claim_number":"129505",
+        "collector_first_name":"Vinnie",
+        "collector_last_name":"Aubrey",
+        "date_entered_in_simplicity":"5/10/15",
+        "is_closed":"Open",
+        "last_work_date":"1/16/19",
+        "original_creditor":"CCAS",
+        "originated_date":"8/25/14",
+        "codebtor_city":"Kennesaw",
+        "codebtor_state":"GA",
+        "codebtor_zip":"30152",
+        "debtor_city":"Kennesaw",
+        "debtor_state":"GA",
+        "debtor_zip":"30152",
+        "current_balance_due":"$77,604.95 ",
+        "interest_start_date":"8/24/15",
+        "original_claim_amount":"$57,855.00 ",
+        "original_claim_interest_rate":"10",
+        "total_claim_amount":"$57,855.00 ",
+        "creditor":"CCAS",
+        "complaint_filed_date":"11/9/17",
+        "current_fees":"$0.00 ",
+        "client_name":"Short name",
+        "lit_or_bk":"Lit",
+        "case_number":"2015-0001",
+        "current_claim_status":"Late Payment",
+        "total_payments":"$0.00 "
+      },
+      {
+        "internal_case_id":"7",
+        "account_received_date":"5/8/15",
+        "account_type":"COMM",
+        "charged_off_date":"1/30/15",
+        "client_claim_number":"129505",
+        "collector_first_name":"Vinnie",
+        "collector_last_name":"Aubrey",
+        "date_entered_in_simplicity":"5/10/15",
+        "is_closed":"Open",
+        "last_work_date":"1/16/19",
+        "original_creditor":"CCAS",
+        "originated_date":"8/25/14",
+        "codebtor_city":"Kennesaw",
+        "codebtor_state":"GA",
+        "codebtor_zip":"30152",
+        "debtor_city":"Kennesaw",
+        "debtor_state":"GA",
+        "debtor_zip":"30152",
+        "current_balance_due":"$77,604.95 ",
+        "interest_start_date":"8/24/15",
+        "original_claim_amount":"$57,855.00 ",
+        "original_claim_interest_rate":"10",
+        "total_claim_amount":"$57,855.00 ",
+        "creditor":"CCAS",
+        "complaint_filed_date":"11/9/17",
+        "current_fees":"$0.00 ",
+        "client_name":"Short name",
+        "lit_or_bk":"Lit",
+        "case_number":"2015-0001",
+        "current_claim_status":"Late Payment",
+        "total_payments":"$0.00 "
+      },
+      {
+        "internal_case_id":"8",
+        "account_received_date":"5/8/15",
+        "account_type":"COMM",
+        "charged_off_date":"1/30/15",
+        "client_claim_number":"129505",
+        "collector_first_name":"Vinnie",
+        "collector_last_name":"Aubrey",
+        "date_entered_in_simplicity":"5/10/15",
+        "is_closed":"Open",
+        "last_work_date":"1/16/19",
+        "original_creditor":"CCAS",
+        "originated_date":"8/25/14",
+        "codebtor_city":"Kennesaw",
+        "codebtor_state":"GA",
+        "codebtor_zip":"30152",
+        "debtor_city":"Kennesaw",
+        "debtor_state":"GA",
+        "debtor_zip":"30152",
+        "current_balance_due":"$77,604.95 ",
+        "interest_start_date":"8/24/15",
+        "original_claim_amount":"$57,855.00 ",
+        "original_claim_interest_rate":"10",
+        "total_claim_amount":"$57,855.00 ",
+        "creditor":"CCAS",
+        "complaint_filed_date":"11/9/17",
+        "current_fees":"$0.00 ",
+        "client_name":"Short name",
+        "lit_or_bk":"Lit",
+        "case_number":"2015-0001",
+        "current_claim_status":"Late Payment",
+        "total_payments":"$0.00 "
+      },
+      {
+        "internal_case_id":"9",
+        "account_received_date":"5/8/15",
+        "account_type":"COMM",
+        "charged_off_date":"1/30/15",
+        "client_claim_number":"129505",
+        "collector_first_name":"Vinnie",
+        "collector_last_name":"Aubrey",
+        "date_entered_in_simplicity":"5/10/15",
+        "is_closed":"Open",
+        "last_work_date":"1/16/19",
+        "original_creditor":"CCAS",
+        "originated_date":"8/25/14",
+        "codebtor_city":"Kennesaw",
+        "codebtor_state":"GA",
+        "codebtor_zip":"30152",
+        "debtor_city":"Kennesaw",
+        "debtor_state":"GA",
+        "debtor_zip":"30152",
+        "current_balance_due":"$77,604.95 ",
+        "interest_start_date":"8/24/15",
+        "original_claim_amount":"$57,855.00 ",
+        "original_claim_interest_rate":"10",
+        "total_claim_amount":"$57,855.00 ",
+        "creditor":"CCAS",
+        "complaint_filed_date":"11/9/17",
+        "current_fees":"$0.00 ",
+        "client_name":"Short name",
+        "lit_or_bk":"Lit",
+        "case_number":"2015-0001",
+        "current_claim_status":"Late Payment",
+        "total_payments":"$0.00 "
+      }
+    ]
 
 
 // db_funcs.postDataTable(
-//                                 { body: { Data: JSON.stringify(data), DataSource: 'All_Data' }}, false
-//                             )
+//             { body: { Data: JSON.stringify(data), DataSource: 'All_Data' }}, false
+//         )
 
   // console.log("postDataTable", postDataTable)
 
@@ -172,14 +404,6 @@ app.post('/p/DataTable', async function(req, res) {
 
 
   db_funcs.postDataTable(req, res).then(data => { return data })
-  // var response = await db_funcs.postDataTable(req, res).then(data => { return data })
-
-  // var success = await response.includes('ERROR') ? false : true
-
-
-
-  // res.send({success: success, url: req.url, body: response })
-
 
 })
 
@@ -193,7 +417,7 @@ app.post('/p/DataTable', async function(req, res) {
 app.post('/p/PlacementVintages', async function(req, res) {
   // db_funcs.postPlacementVintages(req, res)
 
-  const placementVins = await JSON.parse(req.body.data)
+  const placementVins = await JSON.parse(req.body.Data)
   
   var today = new Date()
   
@@ -202,6 +426,7 @@ app.post('/p/PlacementVintages', async function(req, res) {
       var params = await {
         TableName: 'PlacementVintages',
         Item: {
+
           "Vintage":  { S: String(placementVins[i].Vintage) },
           "UnitYeild": { S: String(placementVins[i].UnitYeild) },
           "TotalOriginalClaimAmt": { S: String(placementVins[i].TotalOriginalClaimAmt) },
@@ -226,7 +451,7 @@ app.post('/p/PlacementVintages', async function(req, res) {
           "ComplaintTillService": { S: String(placementVins[i].ComplaintTillService) },
           "ClosedFiles": { S: String(placementVins[i].ClosedFiles) },
           "AvgPlacementTillSuit": { S: String(placementVins[i].AvgPlacementTillSuit) },
-          "Created": { S: String(today) }       
+          "Created": { S: String(today) }  
         }
       }
 
@@ -236,7 +461,7 @@ app.post('/p/PlacementVintages', async function(req, res) {
       })
 
       if(i == placementVins.length - 1) {
-        if(res) res.send({success: 'post call succeed!', url: req.url, body: JSON.stringify(placementVins) })
+        if(res) res.send({success: 'post call succeed!', url: req.url })
       }
   }
 })

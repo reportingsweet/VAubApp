@@ -19,6 +19,10 @@ var bodyParser = require('body-parser')
 var compression = require('compression')
 var awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
 
+// var Base64 = require('js-base64').Base64
+
+var btoa = require('btoa')
+
 // declare a new express app
 var app = express()
 
@@ -321,9 +325,14 @@ app.listen(3002, async function() {
     ]
 
 
-// db_funcs.postDataTable(
-//             { body: { Data: JSON.stringify(data), DataSource: 'All_Data' }}, false
-//         )
+
+  // var input = btoa(encodeURIComponent(JSON.stringify(data)))
+  var input = btoa(JSON.stringify(data))
+
+
+  // db_funcs.postDataTable(
+  //             { body: { Data: input, DataSource: 'All_Data' }}, false
+  //         )
 
   // console.log("postDataTable", postDataTable)
 

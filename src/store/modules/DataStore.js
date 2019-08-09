@@ -3,6 +3,8 @@ var dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
 var pako = require('pako')
 const zlib = require('zlib')
 
+var Base64 = require('js-base64').Base64
+
 import { API } from 'aws-amplify'
 
 // initial state
@@ -40,12 +42,8 @@ const actions = {
     
   },
 
-  
-  
-
   async postDataTable ({ state, commit, rootState }, payload) {
 
-   
     var data = []
     var dataSource = await payload.DataSource
 
@@ -56,12 +54,26 @@ const actions = {
 
       if(i == payload.Data.length-1) {
 
-        console.log("GZIP", data)
+        // let sendPayload = btoa(JSON.stringify(data))
+        
+
+        var str = JSON.stringify(data)
+        console.log(str)
+
+        // var g_zip = pako.gzip(sendPayload)
+        // console.log("g_zip", g_zip)
+
+        var encoded = str.replace(/[\u00A0-\u2666]/g, function(c) {return '&#' + c.charCodeAt(0) + ';' })//encodeURIComponent(str)
+        console.log(encoded)
+
+        var sendPayload = await btoa(encoded)
+        console.log(sendPayload)
+        
 
         let myInit = {
-          body: { Data: JSON.stringify(data), DataSource: dataSource },
+          body: { Data: sendPayload, DataSource: dataSource },
           // body: { Data: data },
-          // isBase64Encoded: true,
+          isBase64Encoded: true,
           // headers: {
           //   "Content-Encoding": 'gzip'
           // }

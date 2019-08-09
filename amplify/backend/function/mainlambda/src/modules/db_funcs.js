@@ -9,19 +9,91 @@ const zlib = require('zlib')
 
 var atob = require('atob')
 
+var Base64 = require('js-base64').Base64
+
 
 /********************************************************************************************************
 * HANDLER FUNCTIONS *
 ********************************************************************************************************/
 
-var postAllDataTable = async (req, res, strData, dataSource) => {
-  const placements = await JSON.parse(strData)
+// DocumentClient Style Item
+  // Item: {
+  //   internal_case_id: item['internal_case_id'],
+  //   account_received_date:item['account_received_date'] ,
+  //   account_type:item['account_type'] ,
+  //   charged_off_date:item['charged_off_date'],
 
-  console.log("POST TO DYNAMO DB", placements.length)
-  
-  var today = new Date()
-  let postPlacements = []
+  //   client_claim_number:item['client_claim_number'] ,
+  //   collector_first_name:item['collector_first_name'] ,
+  //   collector_last_name:item['collector_last_name'],
+  //   date_entered_in_simplicity:item['date_entered_in_simplicity'],
+  //   is_closed:item['is_closed'] ,
+  //   last_work_date:item['last_work_date'] ,
+  //   original_creditor:item['original_creditor'] ,
 
+  //   originated_date:item['originated_date'] ,
+  //   codebtor_city:item['codebtor_city'] ,
+  //   codebtor_state:item['codebtor_state'],
+  //   codebtor_zip:item['codebtor_zip'] ,
+  //   debtor_city:item['debtor_city'] ,
+  //   debtor_state:item['debtor_state'] ,
+  //   debtor_zip:item['debtor_zip'] ,
+  //   current_balance_due:item['current_balance_due'],
+  //   interest_start_date:item['interest_start_date'],
+  //   original_claim_amount:item['original_claim_amount'],
+  //   original_claim_interest_rate:item['original_claim_interest_rate'] ,
+  //   total_claim_amount:item['total_claim_amount'] ,
+  //   creditor:item['creditor'],
+  //   complaint_filed_date:item['complaint_filed_date'],
+  //   current_fees:item['current_fees'] ,
+  //   client_name:item['client_name'] ,
+  //   lit_or_bk:item['lit_or_bk'] ,
+  //   case_number:item['case_number'],
+  //   current_claim_status:item['current_claim_status'],
+  //   total_payments:item['total_payments'] ,
+  //   Created: String(today)    
+  // }
+
+  // DB style Item 
+  // Item: {
+  //   "internal_case_id":  { S: String(item.internal_case_id) },
+  //   "account_received_date": { S: String(item.account_received_date) },
+  //   "account_type": { S: String(item.account_type) },
+  //   "charged_off_date": { S: String(item.charged_off_date) },
+
+  //   "client_claim_number": { S: String(item.client_claim_number) },
+  //   "collector_first_name": { S: String(item.collector_first_name) },
+  //   "collector_last_name": { S: String(item.collector_last_name) },
+  //   "date_entered_in_simplicity": { S: String(item.date_entered_in_simplicity) },
+  //   "is_closed": { S: String(item.is_closed) },
+  //   "last_work_date": { S: String(item.last_work_date) },
+  //   "original_creditor": { S: String(item.original_creditor) },
+
+  //   "originated_date": { S: String(item.originated_date) },
+  //   "codebtor_city": { S: String(item.codebtor_city) },
+  //   "codebtor_state": { S: String(item.codebtor_state) },
+  //   "codebtor_zip": { S: String(item.codebtor_zip) },
+  //   "debtor_city": { S: String(item.debtor_city) },
+  //   "debtor_state": { S: String(item.debtor_state) },
+  //   "debtor_zip": { S: String(item.debtor_zip) },
+  //   "current_balance_due": { S: String(item.current_balance_due) },
+  //   "interest_start_date": { S: String(item.interest_start_date) },
+  //   "original_claim_amount": { S: String(item.original_claim_amount) },
+  //   "original_claim_interest_rate": { S: String(item.original_claim_interest_rate) },
+  //   "total_claim_amount": { S: String(item.total_claim_amount) },
+  //   "creditor": { S: String(item.creditor) },
+  //   "complaint_filed_date": { S: String(item.complaint_filed_date) },
+  //   "current_fees": { S: String(item.current_fees) },
+  //   "client_name": { S: String(item.client_name) },
+  //   "lit_or_bk": { S: String(item.lit_or_bk) },
+  //   "case_number": { S: String(item.case_number) },
+  //   "current_claim_status": { S: String(item.current_claim_status) },
+  //   "total_payments": { S: String(item.total_payments) },
+  //   "Created": { S: String(today) }    
+  // }
+
+  // BATCH postAll Data Table
+  // let postPlacements = []
 
   // await placements.forEach(item => {
   //   console.log(item)
@@ -67,14 +139,14 @@ var postAllDataTable = async (req, res, strData, dataSource) => {
   //   });
   // });
 
-  console.log(postPlacements)
+  // console.log(postPlacements)
 
   
-  let params = { 
-    RequestItems: {
-      'All_Data': postPlacements
-    }
-  }
+  // let params = { 
+  //   RequestItems: {
+  //     'All_Data': postPlacements
+  //   }
+  // }
 
   // db.batchWriteItem(params, function(err, data) {
   //   if(err) {
@@ -82,108 +154,303 @@ var postAllDataTable = async (req, res, strData, dataSource) => {
   //     if(res) res.send({ success: 'fail', message: 'Error: Server Error' + err })
   //   }
   //   else { 
-  //     if(res) res.send({success: 'post call succeed!', url: req.url } )
+  //     if(res) res.send({success: 'post call succeed!', url: req.url, body: { PlacementsAdded:placements.length } } )
   //   }
   // })
 
-  res.send({success: 'post call succeed!', url: req.url, body: JSON.stringify(placements[0]) } )
+  // res.send({success: 'post call succeed!', url: req.url, body: JSON.stringify(placements[0]) } )
 
-  // DocumentClient Style Item
-  // Item: {
-  //   internal_case_id: item['internal_case_id'],
-  //   account_received_date:item['account_received_date'] ,
-  //   account_type:item['account_type'] ,
-  //   charged_off_date:item['charged_off_date'],
-
-  //   client_claim_number:item['client_claim_number'] ,
-  //   collector_first_name:item['collector_first_name'] ,
-  //   collector_last_name:item['collector_last_name'],
-  //   date_entered_in_simplicity:item['date_entered_in_simplicity'],
-  //   is_closed:item['is_closed'] ,
-  //   last_work_date:item['last_work_date'] ,
-  //   original_creditor:item['original_creditor'] ,
-
-  //   originated_date:item['originated_date'] ,
-  //   codebtor_city:item['codebtor_city'] ,
-  //   codebtor_state:item['codebtor_state'],
-  //   codebtor_zip:item['codebtor_zip'] ,
-  //   debtor_city:item['debtor_city'] ,
-  //   debtor_state:item['debtor_state'] ,
-  //   debtor_zip:item['debtor_zip'] ,
-  //   current_balance_due:item['current_balance_due'],
-  //   interest_start_date:item['interest_start_date'],
-  //   original_claim_amount:item['original_claim_amount'],
-  //   original_claim_interest_rate:item['original_claim_interest_rate'] ,
-  //   total_claim_amount:item['total_claim_amount'] ,
-  //   creditor:item['creditor'],
-  //   complaint_filed_date:item['complaint_filed_date'],
-  //   current_fees:item['current_fees'] ,
-  //   client_name:item['client_name'] ,
-  //   lit_or_bk:item['lit_or_bk'] ,
-  //   case_number:item['case_number'],
-  //   current_claim_status:item['current_claim_status'],
-  //   total_payments:item['total_payments'] ,
-  //   Created: String(today)    
-  // }
-
-
-  // for(var i = 0; i < placements.length; i++) {
-
-  //     params = await {
+  // SINGLE call postAllDataTable
+  // var i = 0 
+   
+  //   placements.forEach(item => {
+  //     var param = {
   //       TableName: 'All_Data',
   //       Item: {
-  //         "internal_case_id":  { S: String(placements[i].internal_case_id) },
-  //         "account_received_date": { S: String(placements[i].account_received_date) },
-  //         "account_type": { S: String(placements[i].account_type) },
-  //         "charged_off_date": { S: String(placements[i].charged_off_date) },
+  //         "internal_case_id":  { S: String(item.internal_case_id) },
+  //         "account_received_date": { S: String(item.account_received_date) },
+  //         "account_type": { S: String(item.account_type) },
+  //         "charged_off_date": { S: String(item.charged_off_date) },
 
-  //         "client_claim_number": { S: String(placements[i].client_claim_number) },
-  //         "collector_first_name": { S: String(placements[i].collector_first_name) },
-  //         "collector_last_name": { S: String(placements[i].collector_last_name) },
-  //         "date_entered_in_simplicity": { S: String(placements[i].date_entered_in_simplicity) },
-  //         "is_closed": { S: String(placements[i].is_closed) },
-  //         "last_work_date": { S: String(placements[i].last_work_date) },
-  //         "original_creditor": { S: String(placements[i].original_creditor) },
+  //         "client_claim_number": { S: String(item.client_claim_number) },
+  //         "collector_first_name": { S: String(item.collector_first_name) },
+  //         "collector_last_name": { S: String(item.collector_last_name) },
+  //         "date_entered_in_simplicity": { S: String(item.date_entered_in_simplicity) },
+  //         "is_closed": { S: String(item.is_closed) },
+  //         "last_work_date": { S: String(item.last_work_date) },
+  //         "original_creditor": { S: String(item.original_creditor) },
 
-  //         "originated_date": { S: String(placements[i].originated_date) },
-  //         "codebtor_city": { S: String(placements[i].codebtor_city) },
-  //         "codebtor_state": { S: String(placements[i].codebtor_state) },
-  //         "codebtor_zip": { S: String(placements[i].codebtor_zip) },
-  //         "debtor_city": { S: String(placements[i].debtor_city) },
-  //         "debtor_state": { S: String(placements[i].debtor_state) },
-  //         "debtor_zip": { S: String(placements[i].debtor_zip) },
-  //         "current_balance_due": { S: String(placements[i].current_balance_due) },
-  //         "interest_start_date": { S: String(placements[i].interest_start_date) },
-  //         "original_claim_amount": { S: String(placements[i].original_claim_amount) },
-  //         "original_claim_interest_rate": { S: String(placements[i].original_claim_interest_rate) },
-  //         "total_claim_amount": { S: String(placements[i].total_claim_amount) },
-  //         "creditor": { S: String(placements[i].creditor) },
-  //         "complaint_filed_date": { S: String(placements[i].complaint_filed_date) },
-  //         "current_fees": { S: String(placements[i].current_fees) },
-  //         "client_name": { S: String(placements[i].client_name) },
-  //         "lit_or_bk": { S: String(placements[i].lit_or_bk) },
-  //         "case_number": { S: String(placements[i].case_number) },
-  //         "current_claim_status": { S: String(placements[i].current_claim_status) },
-  //         "total_payments": { S: String(placements[i].total_payments) },
-  //         "Created": { S: String(today) }    
+  //         "originated_date": { S: String(item.originated_date) },
+  //         "codebtor_city": { S: String(item.codebtor_city) },
+  //         "codebtor_state": { S: String(item.codebtor_state) },
+  //         "codebtor_zip": { S: String(item.codebtor_zip) },
+  //         "debtor_city": { S: String(item.debtor_city) },
+  //         "debtor_state": { S: String(item.debtor_state) },
+  //         "debtor_zip": { S: String(item.debtor_zip) },
+  //         "current_balance_due": { S: String(item.current_balance_due) },
+  //         "interest_start_date": { S: String(item.interest_start_date) },
+  //         "original_claim_amount": { S: String(item.original_claim_amount) },
+  //         "original_claim_interest_rate": { S: String(item.original_claim_interest_rate) },
+  //         "total_claim_amount": { S: String(item.total_claim_amount) },
+  //         "creditor": { S: String(item.creditor) },
+  //         "complaint_filed_date": { S: String(item.complaint_filed_date) },
+  //         "current_fees": { S: String(item.current_fees) },
+  //         "client_name": { S: String(item.client_name) },
+  //         "lit_or_bk": { S: String(item.lit_or_bk) },
+  //         "case_number": { S: String(item.case_number) },
+  //         "current_claim_status": { S: String(item.current_claim_status) },
+  //         "total_payments": { S: String(item.total_payments) },
+  //         "Created": { S: String(today) }        
   //       }
   //     }
 
-  //     console.log(params)
+  //     // console.log(param)
+      
+  //     try {
+  
+  //       db.putItem(param, function(err, data) {
+  //         if(err) {
+  //           console.log(err)
+  //           if(res) res.send({ success: 'fail', message: 'Error: Server Error' + err })
+  //         }
+  //         else {
+  //           console.log('data', data) 
+  //         }
+          
+  //       })
+        
+  //       if(i == placements.length - 1) {
 
-  //     db.putItem(params, function(err, data) {
-  //       if(err) {
-  //         console.log(err)
-  //         if(res) res.send({ success: 'fail', message: 'Error: Server Error' + err })
+  //         console.log(param)
+  //         if(res) res.send(
+  //           JSON.stringify({success: 'post call succeed!', url: req.url , body: placements.length } )
+  //         )
+            
   //       }
-  //       else { console.log('data', data) }
-  //     })
 
-  //     if(i == placements.length - 1) {
-  //       if(res) res.send({success: 'post call succeed!', url: req.url , body: JSON.stringify(placements)} )
+  //     } catch(e) {
+
+  //       console.log(e)
+  //       if(res) res.send({ success: 'fail', message: 'Error: Server Error' + e })
+
   //     }
-  // }
+
+  //     i += 1
+
+
+  //   })
+
+
+var postAllDataTable = async (req, res, strData, dataSource) => {
+  
+  
+  // var charData    = strData.split('').map(function(x){return x.charCodeAt(0);});
+  
+  // var binData     = new Uint8Array(unparsed);
+  
+  
+  
+  // const placements = await JSON.parse(unparsed)
+
+  
+
+  
+  var cause = ''
+
+  try {
+
+    console.log("strData", strData)
+
+    const undecoded = await atob(strData)
+    console.log("undecoded", undecoded)
+
+    const unparsed = await undecoded // decodeURIComponent(undecoded)
+    console.log("unparsed", typeof unparsed)
+
+    const parsed = await JSON.parse(undecoded) //.split('').map(function(x){ return x.charCodeAt(0) }) //decodeURIComponent(undecoded)
+
+    const placements = await parsed
+
+    // // console.log("decoded", decoded)
+    
+    // // const placements = await decoded[0]
+    // // const placements = await decoded
+
+    console.log("POST TO DYNAMO DB", placements.length)
+    
+    var today = new Date()
+    var i = 0 
+    
+    await placements.forEach(item => {
+
+      var param = {
+        TableName: 'All_Data',
+        Item: {
+          "internal_case_id":  { S: String(item.internal_case_id) },
+          "account_received_date": { S: String(item.account_received_date) },
+          "account_type": { S: String(item.account_type) },
+          "charged_off_date": { S: String(item.charged_off_date) },
+
+          "client_claim_number": { S: String(item.client_claim_number) },
+          "collector_first_name": { S: String(item.collector_first_name) },
+          "collector_last_name": { S: String(item.collector_last_name) },
+          "date_entered_in_simplicity": { S: String(item.date_entered_in_simplicity) },
+          "is_closed": { S: String(item.is_closed) },
+          "last_work_date": { S: String(item.last_work_date) },
+          "original_creditor": { S: String(item.original_creditor) },
+
+          "originated_date": { S: String(item.originated_date) },
+          "codebtor_city": { S: String(item.codebtor_city) },
+          "codebtor_state": { S: String(item.codebtor_state) },
+          "codebtor_zip": { S: String(item.codebtor_zip) },
+          "debtor_city": { S: String(item.debtor_city) },
+          "debtor_state": { S: String(item.debtor_state) },
+          "debtor_zip": { S: String(item.debtor_zip) },
+          "current_balance_due": { S: String(item.current_balance_due) },
+          "interest_start_date": { S: String(item.interest_start_date) },
+          "original_claim_amount": { S: String(item.original_claim_amount) },
+          "original_claim_interest_rate": { S: String(item.original_claim_interest_rate) },
+          "total_claim_amount": { S: String(item.total_claim_amount) },
+          "creditor": { S: String(item.creditor) },
+          "complaint_filed_date": { S: String(item.complaint_filed_date) },
+          "current_fees": { S: String(item.current_fees) },
+          "client_name": { S: String(item.client_name) },
+          "lit_or_bk": { S: String(item.lit_or_bk) },
+          "case_number": { S: String(item.case_number) },
+          "current_claim_status": { S: String(item.current_claim_status) },
+          "total_payments": { S: String(item.total_payments) },
+          "Created": { S: String(today) }        
+        }
+      }
+
+      // console.log(param)
+      
+      
+
+        db.putItem(param, function(err, data) {
+          if(err) {
+            console.log(err)
+            if(res) res.send({ success: 'fail', message: 'Error: Server Error' + err })
+          }
+          else {
+            console.log('data', data)
+            
+          }
+          
+        })
+
+        if(i == placements.length - 1) {
+          console.log(param)
+          if(res) res.send({success: 'post call succeed!', url: req.url , body: placements.length }  )       
+        }
+        
+      
+
+      i += 1
+
+
+    })
+} catch(e) {
+
+  console.log(e)
+  if(res) res.send({ success: 'fail', message: 'Error: Server Error' + e + JSON.stringify(cause) })
+
 }
+      
+}
+
+/*  
+
+    WORKING CODE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+*/
+
+// var postAllDataTable = async (req, res, strData, dataSource) => {
+
+//   // const placements = await JSON.parse(atob(strData))
+//   const placements = await JSON.parse(strData)
+
+//   console.log("POST TO DYNAMO DB", placements.length)
+  
+//   var today = new Date()
+//   var i = 0 
+   
+//   placements.forEach(item => {
+//     var param = {
+//       TableName: 'All_Data',
+//       Item: {
+//         "internal_case_id":  { S: String(item.internal_case_id) },
+//         "account_received_date": { S: String(item.account_received_date) },
+//         "account_type": { S: String(item.account_type) },
+//         "charged_off_date": { S: String(item.charged_off_date) },
+
+//         "client_claim_number": { S: String(item.client_claim_number) },
+//         "collector_first_name": { S: String(item.collector_first_name) },
+//         "collector_last_name": { S: String(item.collector_last_name) },
+//         "date_entered_in_simplicity": { S: String(item.date_entered_in_simplicity) },
+//         "is_closed": { S: String(item.is_closed) },
+//         "last_work_date": { S: String(item.last_work_date) },
+//         "original_creditor": { S: String(item.original_creditor) },
+
+//         "originated_date": { S: String(item.originated_date) },
+//         "codebtor_city": { S: String(item.codebtor_city) },
+//         "codebtor_state": { S: String(item.codebtor_state) },
+//         "codebtor_zip": { S: String(item.codebtor_zip) },
+//         "debtor_city": { S: String(item.debtor_city) },
+//         "debtor_state": { S: String(item.debtor_state) },
+//         "debtor_zip": { S: String(item.debtor_zip) },
+//         "current_balance_due": { S: String(item.current_balance_due) },
+//         "interest_start_date": { S: String(item.interest_start_date) },
+//         "original_claim_amount": { S: String(item.original_claim_amount) },
+//         "original_claim_interest_rate": { S: String(item.original_claim_interest_rate) },
+//         "total_claim_amount": { S: String(item.total_claim_amount) },
+//         "creditor": { S: String(item.creditor) },
+//         "complaint_filed_date": { S: String(item.complaint_filed_date) },
+//         "current_fees": { S: String(item.current_fees) },
+//         "client_name": { S: String(item.client_name) },
+//         "lit_or_bk": { S: String(item.lit_or_bk) },
+//         "case_number": { S: String(item.case_number) },
+//         "current_claim_status": { S: String(item.current_claim_status) },
+//         "total_payments": { S: String(item.total_payments) },
+//         "Created": { S: String(today) }        
+//       }
+//     }
+
+//     // console.log(param)
+    
+//     try {
+
+//       db.putItem(param, function(err, data) {
+//         if(err) {
+//           console.log(err)
+//           if(res) res.send({ success: 'fail', message: 'Error: Server Error' + err })
+//         }
+//         else {
+//           console.log('data', data)
+          
+//         }
+        
+//       })
+//       if(i == placements.length - 1) {
+//         console.log(param)
+//         if(res) res.send({success: 'post call succeed!', url: req.url , body: placements.length }  )       
+//       }
+      
+      
+
+//     } catch(e) {
+
+//       console.log(e)
+//       if(res) res.send({ success: 'fail', message: 'Error: Server Error' + e })
+
+//     }
+
+//     i += 1
+
+
+//   })
+      
+// }
 
 
 /********************************************************************************************************

@@ -34,6 +34,13 @@
             "privacy": {
                 "open": true
             }
+        },
+        {
+            "name": "/d/DataTable",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
         }
     ],
     "resourceName": "mainappapi",
@@ -59,5 +66,5 @@
             ]
         }
     ],
-    "uuid": "d325ee8e"
+    "uuid": "998aa17a"
 }

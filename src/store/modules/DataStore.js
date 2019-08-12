@@ -53,26 +53,14 @@ const actions = {
       data.push(payload.Data[i])
 
       if(i == payload.Data.length-1) {
-
-        // let sendPayload = btoa(JSON.stringify(data))
-        
-
         var str = JSON.stringify(data)
         console.log(str)
-
-        // var g_zip = pako.gzip(sendPayload)
-        // console.log("g_zip", g_zip)
-
-        var encoded = str.replace(/[\u00A0-\u2666]/g, function(c) {return '&#' + c.charCodeAt(0) + ';' })//encodeURIComponent(str)
-        console.log(encoded)
-
-        var sendPayload = await btoa(encoded)
+        var deflate = pako.deflate(str, { to: 'string' })
+        console.log(deflate)
+        var sendPayload = btoa(deflate)
         console.log(sendPayload)
-        
-
         let myInit = {
           body: { Data: sendPayload, DataSource: dataSource },
-          // body: { Data: data },
           isBase64Encoded: true,
           // headers: {
           //   "Content-Encoding": 'gzip'
@@ -80,54 +68,35 @@ const actions = {
         }
 
         var dataPost = await API.post('mainappapi', '/p/DataTable', myInit)
-          .catch(err => { console.log("postDataTable Error:", err) })
+          .catch(err => { console.log("postDataTable call Error:", err) })
 
         commit('SET_API_RESPONSE', { response: dataPost })
 
       }
     }
-    // var dataSource = await pako.deflate(unescape(encodeURIComponent(JSON.stringify(payload.DataSource))))
-    
-    // var data = await btoa(zlib.deflate(JSON.stringify(payload.Data), function(error, result) {
-    //   if (error) throw error
-    //   return result
-    // }))
-
-   
-
-    // // var data = await JSON.stringify(payload.Data)
-    
-
-
-    // data = await atob(data)
-    // data = await pako.inflate(data, { to: 'string' })
-    // data = await JSON.parse(data)
-
-
-
-    // console.log("uncompressed", data)
-
-
-    // var data = await JSON.stringify(payload.Data)
-    // var dataSource = await JSON.stringify(payload.DataSource)
-    // var data = await JSON.stringify(payload.Data)
-    // console.log("GZIP", data)
-
-    // let myInit = {
-    //   body: { Data: data, DataSource: dataSource },
-    //   headers: {
-    //   }
-    // }
-
-
-
-    
 
   },
 
+
+
+  async deleteDataTable ({state, commit, rootState}, payload) {
+    console.log(payload)
+    var dataSource = payload.DataSource
+    let myInit = {
+      body: { DataSource: dataSource },
+    }
+    var deleteTable = API.del('mainappapi', '/d/DataTable', myInit)
+      .catch(err => { console.log("deleteDataTable call Error:", err)})
+
+    commit('SET_API_RESPONSE', { response: deleteTable})
+  },
+
+
+
   async getTableList({ state, commit, rootState }, payload) {
     const list = await API.get('mainappapi', '/g/TableList')
-    console.log("TABLE LIST:",list)
+    console.log("TABLE LIST CALL RESPONSE:",list)
+    if(list) console.log("TABLES", list.body.TableNames)
     commit('SET_TABLE_LIST', { tableList: list })
   },
 

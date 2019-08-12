@@ -20,7 +20,7 @@ var compression = require('compression')
 var awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
 
 // var Base64 = require('js-base64').Base64
-
+const pako = require('pako')
 var btoa = require('btoa')
 
 // declare a new express app
@@ -326,13 +326,13 @@ app.listen(3002, async function() {
 
 
 
-  // var input = btoa(encodeURIComponent(JSON.stringify(data)))
-  var input = btoa(JSON.stringify(data))
+  var preInput = pako.deflate(JSON.stringify(data), { to: 'string' })
+  var input = btoa(preInput)
 
 
-  // db_funcs.postDataTable(
-  //             { body: { Data: input, DataSource: 'All_Data' }}, false
-  //         )
+  db_funcs.postDataTable(
+              { body: { Data: input, DataSource: 'All_Data' }}, false
+          )
 
   // console.log("postDataTable", postDataTable)
 
@@ -404,10 +404,10 @@ app.get('/g/TableList', async function(req, res) {
 
 
 /********************************************************************************************************
-* POST METHODS *
+* WRITE METHODS *
 ********************************************************************************************************/
 
-
+// POSTS
 
 app.post('/p/DataTable', async function(req, res) {
 
@@ -415,13 +415,6 @@ app.post('/p/DataTable', async function(req, res) {
   db_funcs.postDataTable(req, res).then(data => { return data })
 
 })
-
-
-
-
-
-
-
 
 app.post('/p/PlacementVintages', async function(req, res) {
   // db_funcs.postPlacementVintages(req, res)
@@ -476,9 +469,14 @@ app.post('/p/PlacementVintages', async function(req, res) {
 })
 
 
-/****************************
-* Example delete method *
-****************************/
+// DELETES
+
+app.delete('/d/DataTable', async function(req, res) {
+
+  db_funcs.deleteDataTable(req, res)
+  res.send({ success: 'Delete table call success', url: req.url })
+
+})
 
 app.delete('/d/PlacementVintages', async function(req, res) {
 
@@ -504,6 +502,7 @@ app.delete('/d/PlacementVintages', async function(req, res) {
   }
 
   db.listTables(params, async function(err, data) {
+
     if (err) res.send({ success: 'fail', message: 'DELETE TABLE Error: Server Error' + err})
     else {
 
@@ -523,7 +522,7 @@ app.delete('/d/PlacementVintages', async function(req, res) {
           }
         })
 
-        res.json({success: 'delete table call succeed!', url: req.url, body: data.TableNames })
+        res.json({success: 'delete table call success!', url: req.url, body: data.TableNames })
 
       } else {
 
@@ -535,7 +534,7 @@ app.delete('/d/PlacementVintages', async function(req, res) {
           }
         })
 
-        res.json({success: 'create table call succeed!', url: req.url, body: data })
+        res.json({success: 'create table call success!', url: req.url, body: data })
 
       }
     }
@@ -546,7 +545,7 @@ app.delete('/d/PlacementVintages', async function(req, res) {
 
 app.delete('/items/*', function(req, res) {
   // Add your code here
-  res.json({success: 'delete call succeed!', url: req.url});
+  res.json({success: 'delete call success!', url: req.url});
 })
 
 

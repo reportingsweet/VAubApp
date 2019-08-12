@@ -241,42 +241,126 @@ var Base64 = require('js-base64').Base64
   //   })
 
 
-var postAllDataTable = async (req, res, strData, dataSource) => {
-  
-  
-  // var charData    = strData.split('').map(function(x){return x.charCodeAt(0);});
-  
-  // var binData     = new Uint8Array(unparsed);
-  
-  
-  
-  // const placements = await JSON.parse(unparsed)
-
-  
-
-  
-  var cause = ''
+var h_DelTable = async (tableName)  => {
 
   try {
 
-    console.log("strData", strData)
+    console.dir("STARTING DELETE TABLE")
+    const TABLE_NAME = await tableName
 
-    const undecoded = await atob(strData)
-    console.log("undecoded", undecoded)
+    var deleteParams = await {
+      TableName: TABLE_NAME
+    }
 
-    const unparsed = await undecoded // decodeURIComponent(undecoded)
-    console.log("unparsed", typeof unparsed)
+    await db.deleteTable(deleteParams, function(err, data) {
+      if(err) {
+        console.log("deleteTable Error:", err) 
+        return false
+      }
+      else {
+        console.dir("TABLE DELETED") 
+        return true
+      }
+    })
 
-    const parsed = await JSON.parse(undecoded) //.split('').map(function(x){ return x.charCodeAt(0) }) //decodeURIComponent(undecoded)
+  } catch(e) {
+    console.log("h_DelTable Error:", e)
+    return false
+  }
+  
 
-    const placements = await parsed
+}
 
-    // // console.log("decoded", decoded)
-    
-    // // const placements = await decoded[0]
-    // // const placements = await decoded
+var h_CreateTable = async (tableName) => {
+  try {
+    const TABLE_NAME = await tableName
 
-    console.log("POST TO DYNAMO DB", placements.length)
+    var attributeName = ''
+
+    if(TABLE_NAME=='All_Data') attributeName = "internal_case_id"
+    if(TABLE_NAME=='PlacementVintages') attributeName = "Vintage"
+
+    var createParams = {
+      TableName: TABLE_NAME,
+      AttributeDefinitions: [{ AttributeName: attributeName, AttributeType: "S"}],
+      KeySchema: [{ AttributeName: attributeName, KeyType: "HASH"}],
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 5, 
+        WriteCapacityUnits: 5
+      }
+    }
+
+    var check = false
+
+    await db.createTable(createParams, function(err, data) {
+      if (err) {
+        console.log("createTable Error:", err)
+        check = false
+      }
+      else {
+        console.dir("TABLE CREATED")
+        check = true
+      }
+    })
+
+    return check
+
+  } catch (e) {
+    console.log("h_CreateTable Error:", e)
+    return false
+  }
+}
+
+
+var h_TableCheck = async (tableName) => {
+  try {
+    console.dir("STARTING TABLE CHECK")
+    let params = {
+      Limit: 1
+    }
+    // var check = false
+
+   return db.listTables(params, async function(err, data) {
+      if(err) {
+        console.log("listTables Error:", err)
+        return false
+      }
+      else {
+        if(data.TableNames.includes(tableName)) {
+          console.dir("TABLE FOUND")
+          return true
+        } else {
+          console.dir("TABLE NOT FOUND")
+          return false
+        }
+      }
+    }, flag => { return true })
+
+  } catch(e) {
+    console.log("h_TableCheck Error:", e)
+    return false
+  }
+
+}
+
+var postAllDataTable = async (req, res, base64Encoded, dataSource) => {
+
+  var step = 0
+  var placementsLength = 0
+
+  try {
+    step = 1
+    const binData = atob(base64Encoded)
+
+    step = 2
+    const strData = await pako.inflate(binData, { to: 'string' })
+
+    step = 3
+    const placements = await JSON.parse(strData)
+
+    placementsLength = placements.length
+
+    console.log("POST TO DYNAMO DB", placementsLength)
     
     var today = new Date()
     var i = 0 
@@ -322,140 +406,68 @@ var postAllDataTable = async (req, res, strData, dataSource) => {
           "Created": { S: String(today) }        
         }
       }
-
-      // console.log(param)
       
-      
-
-        db.putItem(param, function(err, data) {
-          if(err) {
-            console.log(err)
-            if(res) res.send({ success: 'fail', message: 'Error: Server Error' + err })
-          }
-          else {
-            console.log('data', data)
-            
-          }
-          
-        })
-
-        if(i == placements.length - 1) {
-          console.log(param)
-          if(res) res.send({success: 'post call succeed!', url: req.url , body: placements.length }  )       
+      db.putItem(param, function(err, data) {
+        if(err) {
+          console.log(err)
+          if(res) res.send({ success: 'fail', message: 'DynamoDB Error:' + err + " AT_STEP: " + step + " " + JSON.stringify(param) })
         }
-        
-      
+        else {
+          console.log('data', data)            
+        }          
+      })
 
+      if(i == placements.length - 1) {
+        console.log(param)
+        if(res) res.send({success: 'post call succeed!', url: req.url , body: placementsLength }  )       
+      }
+        
       i += 1
-
-
     })
-} catch(e) {
+  } catch(e) {
 
-  console.log(e)
-  if(res) res.send({ success: 'fail', message: 'Error: Server Error' + e + JSON.stringify(cause) })
+    console.log(e)
+    if(res) res.send({ 
+                        success: 'fail', 
+                        message: 'API_SERVER_ERROR: ' + e + 
+                                " AT_STEP: " + step + 
+                                " placementLength: " + placementsLength 
+                    })
 
-}
+  }
       
 }
 
-/*  
-
-    WORKING CODE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-*/
-
-// var postAllDataTable = async (req, res, strData, dataSource) => {
-
-//   // const placements = await JSON.parse(atob(strData))
-//   const placements = await JSON.parse(strData)
-
-//   console.log("POST TO DYNAMO DB", placements.length)
-  
-//   var today = new Date()
-//   var i = 0 
-   
-//   placements.forEach(item => {
-//     var param = {
-//       TableName: 'All_Data',
-//       Item: {
-//         "internal_case_id":  { S: String(item.internal_case_id) },
-//         "account_received_date": { S: String(item.account_received_date) },
-//         "account_type": { S: String(item.account_type) },
-//         "charged_off_date": { S: String(item.charged_off_date) },
-
-//         "client_claim_number": { S: String(item.client_claim_number) },
-//         "collector_first_name": { S: String(item.collector_first_name) },
-//         "collector_last_name": { S: String(item.collector_last_name) },
-//         "date_entered_in_simplicity": { S: String(item.date_entered_in_simplicity) },
-//         "is_closed": { S: String(item.is_closed) },
-//         "last_work_date": { S: String(item.last_work_date) },
-//         "original_creditor": { S: String(item.original_creditor) },
-
-//         "originated_date": { S: String(item.originated_date) },
-//         "codebtor_city": { S: String(item.codebtor_city) },
-//         "codebtor_state": { S: String(item.codebtor_state) },
-//         "codebtor_zip": { S: String(item.codebtor_zip) },
-//         "debtor_city": { S: String(item.debtor_city) },
-//         "debtor_state": { S: String(item.debtor_state) },
-//         "debtor_zip": { S: String(item.debtor_zip) },
-//         "current_balance_due": { S: String(item.current_balance_due) },
-//         "interest_start_date": { S: String(item.interest_start_date) },
-//         "original_claim_amount": { S: String(item.original_claim_amount) },
-//         "original_claim_interest_rate": { S: String(item.original_claim_interest_rate) },
-//         "total_claim_amount": { S: String(item.total_claim_amount) },
-//         "creditor": { S: String(item.creditor) },
-//         "complaint_filed_date": { S: String(item.complaint_filed_date) },
-//         "current_fees": { S: String(item.current_fees) },
-//         "client_name": { S: String(item.client_name) },
-//         "lit_or_bk": { S: String(item.lit_or_bk) },
-//         "case_number": { S: String(item.case_number) },
-//         "current_claim_status": { S: String(item.current_claim_status) },
-//         "total_payments": { S: String(item.total_payments) },
-//         "Created": { S: String(today) }        
-//       }
-//     }
-
-//     // console.log(param)
-    
-//     try {
-
-//       db.putItem(param, function(err, data) {
-//         if(err) {
-//           console.log(err)
-//           if(res) res.send({ success: 'fail', message: 'Error: Server Error' + err })
-//         }
-//         else {
-//           console.log('data', data)
-          
-//         }
-        
-//       })
-//       if(i == placements.length - 1) {
-//         console.log(param)
-//         if(res) res.send({success: 'post call succeed!', url: req.url , body: placements.length }  )       
-//       }
-      
-      
-
-//     } catch(e) {
-
-//       console.log(e)
-//       if(res) res.send({ success: 'fail', message: 'Error: Server Error' + e })
-
-//     }
-
-//     i += 1
-
-
-//   })
-      
-// }
 
 
 /********************************************************************************************************
 * GET FUNCTIONS *
 ********************************************************************************************************/
+
+var deleteDataTable = async (req, res)  => {
+
+  try {
+    const TABLE_NAME = await req.body.DataSource
+
+    var deleteParams = await {
+      TableName: TABLE_NAME
+    }
+
+    await db.deleteTable(deleteParams, function(err, data) {
+      if(err) res.send({ success: 'fail', message: 'DELETE TABLE: ' + TABLE_NAME + ' Error: ' + err + " " + JSON.stringify(req.body) })
+      else { }
+    })
+
+    res.send({ success: 'Delete table call success', url: req.url, body: TABLE_NAME })
+  } catch(e) {
+    res.send({ success: 'fail', url: req.url,
+               message: 'API_SERVER_ERROR: ' + e  })
+  }
+  
+
+}
+
+
 
 
 
@@ -513,8 +525,24 @@ var postDataTable = async (req, res) => {
     var str = await req.body.Data
 
     if (req.body.DataSource == 'All_Data') {
+
+
       var dataSource = "All_Data"
-      postAllDataTable(req, res, str, dataSource)
+
+      var tableCheck = await h_TableCheck(dataSource)
+
+      console.log("THIS IS THE tableCheck", tableCheck)
+
+      if (tableCheck) {
+        var deleted = await h_DelTable(dataSource)
+        if(!deleted) if(res) res.send({ success: 'fail', message: "h_DelTable Fail"})
+      }
+      if(deleted || !tableCheck){
+        var createTable = await h_CreateTable(dataSource)
+        if(!createTable) if(res) res.send({ success: 'fail', message: "h_CreateTable Fail"})
+      } 
+      if(createTable) postAllDataTable(req, res, str, dataSource)
+      
     } else if(req.body.DataSource == 'Tickler_Report') {
       var dataSource = "Tickler_Report"
     } else if(req.body.DataSource == 'Acct_Summary') {
@@ -665,5 +693,6 @@ module.exports = {
   listTables,
   getPlacementVintages,
   postPlacementVintages,
-  postDataTable
+  postDataTable,
+  deleteDataTable
 }

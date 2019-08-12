@@ -76,22 +76,46 @@
           <label for=""></label>
         </div>
         <div class="child">
-
-        </div>
-        <b-btn style="max-height:41px;min-height:41px;width: 130px;" id="submit_btn" 
-                    :disabled="action == '' || dataSource == '' || loading || noFile" @click="submitAction()"
+          <b-btn style="max-height:41px;min-height:41px;width: 130px;" id="submit_btn" 
+                    :disabled="(action == '' || dataSource == '') && (loading || noFile)" @click="submitAction()"
                       >Submit Action
-        </b-btn>
+          </b-btn>
+
+          <div style="height: 10px;"></div>
+
+          <b-btn style="max-height:41px;min-height:41px;width: 130px;" id="submit_btn" 
+                      :disabled="loading" @click="listTables()"
+                        >List Tables
+          </b-btn>
+        </div>
+        
       </div>
 
     </div>
 
+    <div>
+      <div>TABLE LIST</div>
+
+      <div style="width: 250px;overflow: scroll;margin: auto;">
+         {{ this.tableArr }}
+      </div>
+
+    </div>
+
+    
+
     <div v-if="action=='Insert'||action=='Update'">
       <div>LOADED DATA:</div>
       <br>
-      <div v-if="loadedData.length>0" style="width: 1000px; height: 500px;overflow: scroll;margin: auto;">
+
+      <div v-if="tableList.length>0" style="width: 1000px; height: 500px;overflow: scroll;margin: auto;">
+         {{ this.tableList }}
+      </div>
+
+      <div v-if="loadedData && loadedData.length>0" style="width: 1000px; height: 500px;overflow: scroll;margin: auto;">
          {{ this.loadedData }}
       </div>
+
     </div>
 
     
@@ -131,12 +155,25 @@ export default {
   computed: {
     ...mapGetters([
       'tableList'
-    ])
+    ]),
+    tableArr() {
+      console.log(this.tableList)
+      return this.tableList.body ? this.tableList.body.TableNames : []
+    }
   },
   methods: {
+    listTables() {
+      this.$store.dispatch('getTableList')
+    },
     async submitAction() {
 
-      await this.$store.dispatch('postDataTable', { Data: this.loadedData, DataSource: this.dataSource })
+      if(this.action == 'Insert') {
+        await this.$store.dispatch('postDataTable', { Data: this.loadedData, DataSource: this.dataSource })
+      } else if (this.action == 'Remove') {
+        this.$store.dispatch('deleteDataTable', { DataSource: this.dataSource })
+      }
+
+      
       this.loadedData = []
     },
     clearDropDown (dropDown) {

@@ -47,9 +47,10 @@ const actions = {
     var data = []
     var dataSource = await payload.DataSource
 
-    console.log(payload.Data)
+    console.log("payload.Data", payload.Data)
 
     for(var i = 0; i < payload.Data.length; i++) {
+      
       data.push(payload.Data[i])
 
       if(i == payload.Data.length-1) {
@@ -73,6 +74,7 @@ const actions = {
         commit('SET_API_RESPONSE', { response: dataPost })
 
       }
+    
     }
 
   },
@@ -122,7 +124,7 @@ const actions = {
             {
               Vintage: payload.data[i].Vintage, 
               UnitYeild: payload.data[i].UnitYeild,
-              TotalOriginalClaimAmt: payload.data[i].TotalOriginalClaimAmt,
+              // TotalOriginalClaimAmt: payload.data[i].TotalOriginalClaimAmt,
               TotalFees: payload.data[i].TotalFees,
               TotalCollectedCalc: payload.data[i].TotalCollectedCalc,
               TotalOriginalClaimAmt: payload.data[i].TotalOriginalClaimAmt,

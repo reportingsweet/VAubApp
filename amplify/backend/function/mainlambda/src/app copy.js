@@ -438,9 +438,7 @@ app.get('/g/TableList', async function(req, res) {
 app.post('/p/DataTable', async function(req, res) {
 
 
-  // rds_funcs.postDataTable(req, res).then(data => { return data })
-
-  res.send("made It")
+  db_funcs.postDataTable(req, res).then(data => { return data })
 
 })
 
@@ -452,7 +450,7 @@ app.post('/p/PlacementVintages', async function(req, res) {
   var today = new Date()
   
   for(var i = 0; i < placementVins.length; i++) {
- 
+
       var params = await {
         TableName: 'PlacementVintages',
         Item: {

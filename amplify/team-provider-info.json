@@ -15,5 +15,17 @@
                 "mainlambda": {}
             }
         }
+    },
+    "vthrsdev": {
+        "awscloudformation": {
+            "AuthRoleName": "reportingsweetdev-vthrsdev-20190831120940-authRole",
+            "UnauthRoleArn": "arn:aws:iam::960995731810:role/reportingsweetdev-vthrsdev-20190831120940-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::960995731810:role/reportingsweetdev-vthrsdev-20190831120940-authRole",
+            "Region": "us-east-1",
+            "DeploymentBucketName": "reportingsweetdev-vthrsdev-20190831120940-deployment",
+            "UnauthRoleName": "reportingsweetdev-vthrsdev-20190831120940-unauthRole",
+            "StackName": "reportingsweetdev-vthrsdev-20190831120940",
+            "StackId": "arn:aws:cloudformation:us-east-1:960995731810:stack/reportingsweetdev-vthrsdev-20190831120940/bd5cac50-cc09-11e9-9117-0a2e8057061e"
+        }
     }
 }

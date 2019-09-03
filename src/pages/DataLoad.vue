@@ -87,6 +87,8 @@
                       :disabled="loading" @click="listTables()"
                         >List Tables
           </b-btn>
+
+
         </div>
         
       </div>
@@ -147,7 +149,7 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('getTableList')
+    // this.$store.dispatch('getTableList')
   },
   components: {
     Multiselect
@@ -167,6 +169,8 @@ export default {
     },
     async submitAction() {
 
+      console.log("this.loadedData", this.loadedData)
+
       if(this.action == 'Insert') {
         await this.$store.dispatch('postDataTable', { Data: this.loadedData, DataSource: this.dataSource })
       } else if (this.action == 'Remove') {
@@ -175,6 +179,7 @@ export default {
 
       
       this.loadedData = []
+      this.noFile = true
     },
     clearDropDown (dropDown) {
       if(dropDown=='DataSource') this.dataSource = ''
@@ -202,11 +207,16 @@ export default {
           })
 
           await workbook.SheetNames.forEach( async (sheetName) => {
-              // Here is your object
-              var XL_row_object = await XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName])
-              self.loadedData = await XL_row_object
+            // Here is your object
+            var XL_row_object = await XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName])
+            if(self.noFile) {
+
+              if( Object.keys(XL_row_object).length !== 0) self.loadedData = await XL_row_object
               self.noFile = false
               self.loading = false
+
+            }
+            
           })
       }
 

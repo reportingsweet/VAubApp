@@ -2,14 +2,12 @@
     <div :input="IDXdbCases">
     <!-- <div> -->
 
-
-
-        <b-btn @click="postPlacements">DYNAMO</b-btn>
+        <!-- <b-btn @click="postPlacements">DYNAMO</b-btn>
 
         <br />
         <br />
 
-        <b-btn @click="deletePlacements">DYNAMO_Delete</b-btn>
+        <b-btn @click="deletePlacements">DYNAMO_Delete</b-btn> -->
 
         <div style=" text-align:left; max-width:600px;min-width:600px;" class="grid">            
             <b-col style="max-width:400px;min-width:400px;" class="col1">

@@ -99,20 +99,18 @@
       <div>TABLE LIST</div>
 
       <div style="width: 250px;overflow: scroll;margin: auto;">
-         {{ this.tableArr }}
+         <div v-for="(table, key) in this.tableArr">{{ key + 1 }} - {{ table }}</div>
       </div>
 
     </div>
+
+    <br>
 
     
 
     <div v-if="action=='Insert'||action=='Update'">
       <div>LOADED DATA:</div>
       <br>
-
-      <div v-if="tableList.length>0" style="width: 1000px; height: 500px;overflow: scroll;margin: auto;">
-         {{ this.tableList }}
-      </div>
 
       <div v-if="loadedData && loadedData.length>0" style="width: 1000px; height: 500px;overflow: scroll;margin: auto;">
          {{ this.loadedData }}
@@ -159,8 +157,8 @@ export default {
       'tableList'
     ]),
     tableArr() {
-      console.log(this.tableList)
-      return this.tableList.body ? this.tableList.body.TableNames : []
+      console.log("this.tableList", this.tableList)
+      return this.tableList
     }
   },
   methods: {
@@ -174,7 +172,7 @@ export default {
       if(this.action == 'Insert') {
         await this.$store.dispatch('postDataTable', { Data: this.loadedData, DataSource: this.dataSource })
       } else if (this.action == 'Remove') {
-        this.$store.dispatch('deleteDataTable', { DataSource: this.dataSource })
+        this.$store.dispatch('truncateDataTable', { DataSource: this.dataSource })
       }
 
       

@@ -5,7 +5,14 @@ const zlib = require('zlib')
 
 var Base64 = require('js-base64').Base64
 
+
+
+
+
 import { API } from 'aws-amplify'
+
+
+
 
 // initial state
 const state = {
@@ -50,7 +57,7 @@ const actions = {
     console.log("payload.Data", payload.Data)
 
     for(var i = 0; i < payload.Data.length; i++) {
-      
+
       data.push(payload.Data[i])
 
       if(i == payload.Data.length-1) {
@@ -68,7 +75,7 @@ const actions = {
           // }
         }
 
-        var dataPost = await API.post('mainappapi', '/p/DataTable', myInit)
+        var dataPost = await API.post('mainappapi2', '/p/DataTable', myInit)
           .catch(err => { console.log("postDataTable call Error:", err) })
 
         commit('SET_API_RESPONSE', { response: dataPost })
@@ -81,25 +88,37 @@ const actions = {
 
 
 
-  async deleteDataTable ({state, commit, rootState}, payload) {
+  async truncateDataTable ({state, commit, rootState}, payload) {
     console.log(payload)
+
     var dataSource = payload.DataSource
     let myInit = {
       body: { DataSource: dataSource },
     }
-    var deleteTable = API.del('mainappapi', '/d/DataTable', myInit)
-      .catch(err => { console.log("deleteDataTable call Error:", err)})
+    var truncTable = API.del('mainappapi2', '/d/DataTable', myInit)
+      .catch(err => { console.log("truncateDataTable call Error:", err)})
 
-    commit('SET_API_RESPONSE', { response: deleteTable})
+    commit('SET_API_RESPONSE', { response: truncTable})
   },
 
 
 
   async getTableList({ state, commit, rootState }, payload) {
-    const list = await API.get('mainappapi', '/g/TableList')
-    console.log("TABLE LIST CALL RESPONSE:",list)
-    if(list) console.log("TABLES", list.body.TableNames)
-    commit('SET_TABLE_LIST', { tableList: list })
+    try {
+      const list = await API.get('mainappapi2', '/g/TableList')
+      console.log("TABLE LIST CALL RESPONSE:",list)
+      var tables = []
+      if(list) {
+        console.log(list)
+        list.result.forEach(table => {
+          tables.push(table.Tables_in_reportingsweet)
+        })
+        console.log("TABLES", tables)
+        commit('SET_TABLE_LIST', { tableList: tables })
+      }
+    } catch(error) {
+      console.log("STORE getTableList Error:", error)
+    }
   },
 
   async getPVins({state, commit, rootState }, payload) {

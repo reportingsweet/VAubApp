@@ -1,0 +1,49 @@
+{
+    "paths": [
+        {
+            "name": "/g/TableList",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
+        },
+        {
+            "name": "/p/DataTable",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
+        },
+        {
+            "name": "/d/DataTable",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
+        }
+    ],
+    "resourceName": "mainappapi2",
+    "apiName": "mainappapi2",
+    "functionArns": [
+        {
+            "lambdaFunction": "mainlambda"
+        }
+    ],
+    "privacy": {
+        "auth": 0,
+        "unauth": 0,
+        "authRoleName": "reportingsweetdev-vthrsdev-20190831120940-authRole",
+        "unAuthRoleName": "reportingsweetdev-vthrsdev-20190831120940-unauthRole"
+    },
+    "dependsOn": [
+        {
+            "category": "function",
+            "resourceName": "mainlambda",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        }
+    ],
+    "uuid": "a1af4601"
+}

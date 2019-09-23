@@ -9,7 +9,8 @@
         "mainlambda": {
             "service": "Lambda",
             "providerPlugin": "awscloudformation",
-            "build": true
+            "build": true,
+            "dependsOn": []
         }
     },
     "api": {
@@ -26,6 +27,21 @@
                     ]
                 }
             ]
+        },
+        "mainappapi2": {
+            "service": "API Gateway",
+            "providerPlugin": "awscloudformation",
+            "dependsOn": [
+                {
+                    "category": "function",
+                    "resourceName": "mainlambda",
+                    "attributes": [
+                        "Name",
+                        "Arn"
+                    ]
+                }
+            ]
         }
-    }
+    },
+    "auth": {}
 }

@@ -1,7 +1,14 @@
 var aurora_config = require('../Aurora/config.js') 
 
 var mysql = require('mysql');
-var conn = mysql.createConnection({
+// var conn = mysql.createConnection({
+//     host: aurora_config.host,
+//     user: aurora_config.user,
+//     password: aurora_config.password,
+//     database: aurora_config.database,
+// });
+var conn = mysql.createPool({
+    connectionLimit: 10,
     host: aurora_config.host,
     user: aurora_config.user,
     password: aurora_config.password,
@@ -11,6 +18,10 @@ var conn = mysql.createConnection({
 const pako = require('pako')
 var atob = require('atob')
 
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////
+  HANDLE FUNCS
+///////////////////////////////////////////////////////////////////////////////////////////////*/
 
 var postPlacements = async (req, res, base64Encoded) => {
 
@@ -32,7 +43,17 @@ var postPlacements = async (req, res, base64Encoded) => {
     placementsLength = placements.length
 
     var query = "INSERT INTO Placements (" +
-      "internal_case_id,account_received_date,account_type,charged_off_date,client_business_type,client_claim_number,collector_first_name,collector_last_name,date_entered_in_simplicity,first_delinquency_date,is_closed,last_work_date,original_creditor,originated_date,purchased_date,referring_attorney_name,codebtor_city,codebtor_state,codebtor_zip,debtor_city,debtor_state,debtor_zip,employer_name,current_balance_due,interest_start_date,last_payment_amount,last_payment_date,original_claim_amount,original_claim_interest_rate,total_claim_amount,creditor,abstract_recorded_date,answer_filed_date,attorney_name,bank_garnish_received_date,bank_garnish_sent_date,complaint_amount,complaint_filed_date,complaint_sent_date,complaint_summons_sent_date,complaint_summons_served_date,docket_number,garnish_wages_received_date,garnish_wages_sent_date,judgment_amount,judgment_county_name,satisfaction_judgment_sent_date,supplemental_exam_date,writ_return_date,writ_sent_date,attorney_fees_awarded,attorney_fees_sought,current_fees,total_attorney_fees,client_name,lit_or_bk,case_number,judgment_entered_date,vintage_date,judgment_type,last_payment_netted_amount,current_claim_status,payment_plan_amount_1,payment_plan_date_1,frequency,no_of_payments,total_payments, createddate" +
+      "internal_case_id,account_received_date,account_type,charged_off_date,client_business_type,client_claim_number," + 
+      "collector_first_name,collector_last_name,date_entered_in_simplicity,first_delinquency_date,is_closed," + 
+      "last_work_date,original_creditor,originated_date,purchased_date,referring_attorney_name,codebtor_city,codebtor_state," + 
+      "codebtor_zip,debtor_city,debtor_state,debtor_zip,employer_name,current_balance_due,interest_start_date,last_payment_amount," + 
+      "last_payment_date,original_claim_amount,original_claim_interest_rate,total_claim_amount,creditor,abstract_recorded_date," + 
+      "answer_filed_date,attorney_name,bank_garnish_received_date,bank_garnish_sent_date,complaint_amount,complaint_filed_date," + 
+      "complaint_sent_date,complaint_summons_sent_date,complaint_summons_served_date,docket_number,garnish_wages_received_date," + 
+      "garnish_wages_sent_date,judgment_amount,judgment_county_name,satisfaction_judgment_sent_date,supplemental_exam_date," + 
+      "writ_return_date,writ_sent_date,attorney_fees_awarded,attorney_fees_sought,current_fees,total_attorney_fees," + 
+      "client_name,lit_or_bk,case_number,judgment_entered_date,vintage_date,judgment_type,last_payment_netted_amount," + 
+      "current_claim_status,payment_plan_amount_1,payment_plan_date_1,frequency,no_of_payments,total_payments, createddate" +
       ") VALUES ?"
 
     var values = []
@@ -40,9 +61,9 @@ var postPlacements = async (req, res, base64Encoded) => {
     console.dir("QUERY")
     console.log(query)
     console.dir("DATA")
-    console.log(data)
+    console.log("PLACEMENTS", placements)
 
-    data.forEach(item => {
+    placements.forEach(item => {
       values.push(
         [
           item.internal_case_id,item.account_received_date,item.account_type,item.charged_off_date,item.client_business_type,
@@ -61,26 +82,47 @@ var postPlacements = async (req, res, base64Encoded) => {
       )
     })
 
-    console.log(values)
+    console.log("VALUES", values)
 
-    conn.query(query, [values], (error, result) => {
-      if (error) {
-        throw error
-      }
-      console.log("Placements POST successful!")
-      if (res) res.send({ code: 0, result: result })
-    })
+
+    var promise = new Promise((resolve, reject) => {
+      conn.query(query, [values], (err, result) => {
+        // conn.release()
+        if (err) {
+
+          console.log("MySQL DB Error:", err)
+          resolve(err)
+
+        } else {
+
+          console.log("Placements POST successful!")
+          resolve(result)
+
+        }
+      })
+    }).then((results) => { return results })
+
+    console.log("PROMISE", promise)
+
+    return promise
+
   } catch(error) {
-    console.log(error)
-    if(res) res.send({ 
-                        success: 'fail', 
-                        message: 'API_SERVER_ERROR: ' + error + 
-                                " AT_STEP: " + step + 
-                                " placementLength: " + placementsLength 
-                    })
+
+    console.log("API postPlacements Error:", error)
+
+    return {  error: 1,
+              success: 'fail', 
+              message: 'API_SERVER_ERROR: ' + error + 
+                      " AT_STEP: " + step + 
+                      " placementLength: " + placementsLength 
+          }
   }
 }
 
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////
+  POST FUNCS
+///////////////////////////////////////////////////////////////////////////////////////////////*/
 
 var postDataTable = (req, res) => {
   if (req.body.DataSource == 'All_Data') {
@@ -88,10 +130,73 @@ var postDataTable = (req, res) => {
   }
 }
 
+var truncateDataTable = async (req, res) => {
+
+  if(req.body.DataSource == 'All_Data') {
+
+    var query = await "truncate table reportingsweet.Placements"
+  
+  }
+
+  try {
+    var promise = new Promise((resolve, reject) => {
+      conn.query(query, (error, result) => {
+        // conn.release()
+        if(error) {
+          console.log("MYSQL DB ERROR:", error)
+          resolve(error)
+          // res.send({ error: 1, success: "Placements TRUNCATE Failed", code: 0, result: err })
+        } else {
+          // res.send({ error: 0, success: "Placements TRUNCATE successful", code: 0, result: result })
+          console.log("RESULT", result)
+          resolve(result)
+        }
+      })
+    }).then((results) => { return results })
+  
+    return promise
+  } catch(e) {
+    console.log("MYSQL TRUNCATE TABLE ERROR:", e)
+    return "MYSQL TRUNCATE TABLE ERROR: " + e
+  }
+
+
+}
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////
+  GET FUNCS
+///////////////////////////////////////////////////////////////////////////////////////////////*/
+
+
+var listTables = (req, res) => {
+  try {
+    var promise = new Promise((resolve, reject) => {
+      conn.query('show tables', function (error, results, fields) {
+        // conn.release()
+        if (error) {
+            console.log(error)
+            resolve(error)
+        } else {
+            console.log("INSIDE CONN results:", results);
+            resolve(results)
+            // conn.end(function (err) { if(err) console.log(err) })
+        }
+      })
+    }).then((results) => { return results})
+    return promise
+  } catch(e) {
+    console.log(e)
+    return "MYSQL LIST TABLE ERROR: " + e
+  }
+}
+
 
 module.exports = {
 
   postPlacements,
-  postDataTable
+  postDataTable,
+  truncateDataTable,
+
+  listTables
 
 }

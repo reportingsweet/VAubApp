@@ -28,22 +28,20 @@ var btoa = require('btoa')
 // declare a new express app
 var app = express()
 
-var mysql = require('mysql');
-var connection = mysql.createConnection({
-    host: aurora_config.host,
-    user: aurora_config.user,
-    password: aurora_config.password,
-    database: aurora_config.database,
-});
+// var mysql = require('mysql');
+// var connection = mysql.createConnection({
+//     host: aurora_config.host,
+//     user: aurora_config.user,
+//     password: aurora_config.password,
+//     database: aurora_config.database,
+// });
 
 // import axios from 'axios'
   // or 
 
 // var axios = require('axios')
-
-
+app.use(bodyParser.json({ limit: '50mb', type: 'application/json' }))
 app.use(express.static('public'))
-app.use(bodyParser.json())
 app.use(awsServerlessExpressMiddleware.eventContext())
 app.use(compression())
 
@@ -63,8 +61,8 @@ app.listen(3002, async function() {
 
 
   var db_funcs = require('./modules/db_funcs')
-  var tableList = await db_funcs.listTables().then(data => { return data })
-  console.log("Table List", tableList.TableNames)
+  // var tableList = await db_funcs.listTables().then(data => { return data })
+  // console.log("Table List", tableList.TableNames)
   var getPVins = await db_funcs.getPlacementVintages()
   console.log("Placement Vintages:", getPVins)
 
@@ -334,25 +332,16 @@ app.listen(3002, async function() {
       }
     ]
 
-    // rds_funcs.postPlacements(false, false, data)
+
+    // var preInput = pako.deflate(JSON.stringify(data), { to: 'string' })
+    // var input = btoa(preInput)
+
+    // USE THIS TO POST DUMMY DATA
+    // rds_funcs.postPlacements(false, false, input)
 
 
-
-  var preInput = pako.deflate(JSON.stringify(data), { to: 'string' })
-  var input = btoa(preInput)
-
-  connection.query('show tables', function (error, results, fields) {
-    if (error) {
-        connection.destroy();
-        console.log(error)
-        throw error;
-    } else {
-        // connected!
-        console.log(results);
-        // callback(error, results);
-        connection.end(function (err) { if(err) console.log(err) });
-    }
-});
+    // var list = await rds_funcs.listTables() 
+    // console.log("app.js list:", list)
 
 
   // db_funcs.postDataTable(
@@ -401,10 +390,10 @@ app.listen(3002, async function() {
 
 
 
-const AWS = require('aws-sdk')
-const db = new AWS.DynamoDB({apiVersion: '2012-08-10', region: 'us-east-1'})
+// const AWS = require('aws-sdk')
+// const db = new AWS.DynamoDB({apiVersion: '2012-08-10', region: 'us-east-1'})
 
-const dynamo_config = require('./Dynamo/config.js')
+// const dynamo_config = require('./Dynamo/config.js')
 
 
 /********************************************************************************************************
@@ -418,14 +407,20 @@ var rds_funcs = require('./modules/rds_funcs')
 * GET METHODS *
 ********************************************************************************************************/
 
+app.get('/g/TableList', async function(req, res) {
 
-app.get('/g/PlacementVintages', function(req, res) {
-  db_funcs.getPlacementVintages(req, res)
+  try {
+    var list = await rds_funcs.listTables() //.then(data => { return data })
+
+    res.send({ error: 0, success: 'TableList call succeeded', url: req.url, result: list })
+  } catch (e) {
+    res.send({ error: 1, success: 'TableList call Failed', url: req.url, result: e })
+  }
+
 })
 
-app.get('/g/TableList', async function(req, res) {
-  var list = await db_funcs.listTables().then(data => { return data })
-  res.send({ success: 'TableList call succeeded', url: req.url, body: list })
+app.get('/g/PlacementVintages', function(req, res) {
+
 })
 
 
@@ -435,65 +430,21 @@ app.get('/g/TableList', async function(req, res) {
 
 // POSTS
 
+
 app.post('/p/DataTable', async function(req, res) {
 
-
-  // rds_funcs.postDataTable(req, res).then(data => { return data })
-
-  res.send("made It")
-
+  try {
+    var result = await rds_funcs.postDataTable(req, res) //.then(data => { return data })
+    res.send({ error: 0, sucess: "DataTable POST successful", url: req.url, result: "" })
+  } catch(e) {
+    console.log("DataTable post Failed", e)
+    res.send({ error: 1, sucess: "DataTable POST Failed", url: req.url, result: e })
+  }
 })
 
 app.post('/p/PlacementVintages', async function(req, res) {
-  // db_funcs.postPlacementVintages(req, res)
 
-  const placementVins = await JSON.parse(req.body.Data)
-  
-  var today = new Date()
-  
-  for(var i = 0; i < placementVins.length; i++) {
  
-      var params = await {
-        TableName: 'PlacementVintages',
-        Item: {
-
-          "Vintage":  { S: String(placementVins[i].Vintage) },
-          "UnitYeild": { S: String(placementVins[i].UnitYeild) },
-          "TotalOriginalClaimAmt": { S: String(placementVins[i].TotalOriginalClaimAmt) },
-          "TotalFees": { S: String(placementVins[i].TotalFees) },
-          "TotalCollectedCalc": { S: String(placementVins[i].TotalCollectedCalc) },
-          "SuitTillJudgment": { S: String(placementVins[i].SuitTillJudgment) },
-          "SuitRate": { S: String(placementVins[i].SuitRate) },
-          "SuedCount": { S: String(placementVins[i].SuedCount) },
-          "ServedCount": { S: String(placementVins[i].ServedCount) },
-          "ServedConvRate": { S: String(placementVins[i].ServedConvRate) },
-          "RecentPmtPct": { S: String(placementVins[i].RecentPmtPct) },
-          "PlacedTillJudgment": { S: String(placementVins[i].PlacedTillJudgment) },
-          "OpenFiles": { S: String(placementVins[i].OpenFiles) },
-          "NetLiquidation": { S: String(placementVins[i].NetLiquidation) },
-          "LocalCounselRate": { S: String(placementVins[i].LocalCounselRate) },
-          "Liquidation": { S: String(placementVins[i].Liquidation) }, 
-          "JmtRate": { S: String(placementVins[i].JmtRate) },
-          "JmtCount": { S: String(placementVins[i].JmtCount) },
-          "FileCount": { S: String(placementVins[i].FileCount) },
-          "FaceValue": { S: String(placementVins[i].FaceValue) },
-          "ContingencyRate": { S: String(placementVins[i].ContingencyRate) },
-          "ComplaintTillService": { S: String(placementVins[i].ComplaintTillService) },
-          "ClosedFiles": { S: String(placementVins[i].ClosedFiles) },
-          "AvgPlacementTillSuit": { S: String(placementVins[i].AvgPlacementTillSuit) },
-          "Created": { S: String(today) }  
-        }
-      }
-
-      db.putItem(params, function(err, data) {
-        if(err) if(res) res.send({ success: 'fail', message: 'Error: Server Error' + err })
-        else { console.log('data', data) }
-      })
-
-      if(i == placementVins.length - 1) {
-        if(res) res.send({success: 'post call succeed!', url: req.url })
-      }
-  }
 })
 
 
@@ -501,74 +452,15 @@ app.post('/p/PlacementVintages', async function(req, res) {
 
 app.delete('/d/DataTable', async function(req, res) {
 
-  db_funcs.deleteDataTable(req, res)
-  res.send({ success: 'Delete table call success', url: req.url })
+  var result = rds_funcs.truncateDataTable(req, res)
+
+  res.send({ success: "Truncate " + "table success", url: req.url, result: result })
 
 })
 
 app.delete('/d/PlacementVintages', async function(req, res) {
 
-  const TABLE_NAME = 'PlacementVintages'
-
-  var params = {
-    // ExclusiveStartTableName: TABLE_NAME,
-    Limit: 1
-  }
-
-  var createParams = {
-    TableName: TABLE_NAME,
-    AttributeDefinitions: [{ AttributeName: "Vintage", AttributeType: "S"}],
-    KeySchema: [{ AttributeName: "Vintage", KeyType: "HASH"}],
-    ProvisionedThroughput: {
-      ReadCapacityUnits: 5, 
-      WriteCapacityUnits: 5
-    }
-  }
-
-  var deleteParams = {
-    TableName: TABLE_NAME
-  }
-
-  db.listTables(params, async function(err, data) {
-
-    if (err) res.send({ success: 'fail', message: 'DELETE TABLE Error: Server Error' + err})
-    else {
-
-      if(data.TableNames.includes(TABLE_NAME)) {
-
-        // DELETE TABLE
-        await db.deleteTable(deleteParams, function(err, data) {
-          if (err) res.send({ success: 'fail', message: 'DELETE TABLE Error: Server Error' + err})
-          else {
-            // db.createTable(createParams, function(err, data) {
-            //   if (err) res.send({ success: 'fail', message: 'CREATE TABLE Error: Server Error' + err})
-            //   else { 
-                // res.json({success: 'delete table call succeed!', url: req.url})
-            
-              // }
-            // })
-          }
-        })
-
-        res.json({success: 'delete table call success!', url: req.url, body: data.TableNames })
-
-      } else {
-
-        // CREATE TABLE
-        await db.createTable(createParams, function(err, data) {
-          if (err) res.send({ success: 'fail', message: 'CREATE TABLE Error: Server Error' + err})
-          else { 
-            // res.json({success: 'create table call succeed!', url: req.url}) 
-          }
-        })
-
-        res.json({success: 'create table call success!', url: req.url, body: data })
-
-      }
-    }
-  })
-
-  // res.json({success: 'delete call succeed!', url: req.url})
+ 
 })
 
 app.delete('/items/*', function(req, res) {

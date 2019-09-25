@@ -20,6 +20,13 @@
             "privacy": {
                 "open": true
             }
+        },
+        {
+            "name": "/g/Reminders",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
         }
     ],
     "resourceName": "mainappapi2",
@@ -45,5 +52,5 @@
             ]
         }
     ],
-    "uuid": "a1af4601"
+    "uuid": "7492aa3b"
 }

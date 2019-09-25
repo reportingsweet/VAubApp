@@ -53,6 +53,7 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 
 
+
   next()
 });
 
@@ -410,9 +411,9 @@ var rds_funcs = require('./modules/rds_funcs')
 app.get('/g/TableList', async function(req, res) {
 
   try {
-    var list = await rds_funcs.listTables() //.then(data => { return data })
+    var result = await rds_funcs.listTables() //.then(data => { return data })
 
-    res.send({ error: 0, success: 'TableList call succeeded', url: req.url, result: list })
+    res.send({ error: 0, success: 'TableList call succeeded', url: req.url, result: result })
   } catch (e) {
     res.send({ error: 1, success: 'TableList call Failed', url: req.url, result: e })
   }
@@ -420,6 +421,20 @@ app.get('/g/TableList', async function(req, res) {
 })
 
 app.get('/g/PlacementVintages', function(req, res) {
+
+})
+
+app.get('/g/Reminders', async function(req, res) {
+  try {
+    var result = await rds_funcs.getReminders()
+
+    console.log("API CALL RESULT:", result)
+
+    res.send({ error: 0, success: 'Reminders call succeeded', url: req.url, result: JSON.stringify(result) })
+  } catch(e) {
+    res.send({ error: 1, success: 'Reminders call Failed', url: req.url, result: e })
+  }
+  
 
 })
 
@@ -454,7 +469,7 @@ app.delete('/d/DataTable', async function(req, res) {
 
   var result = rds_funcs.truncateDataTable(req, res)
 
-  res.send({ success: "Truncate " + "table success", url: req.url, result: result })
+  res.send({ error: result.error, success: "", url: req.url, result: result.result })
 
 })
 
@@ -465,7 +480,7 @@ app.delete('/d/PlacementVintages', async function(req, res) {
 
 app.delete('/items/*', function(req, res) {
   // Add your code here
-  res.json({success: 'delete call success!', url: req.url});
+  res.json({ success: 'delete call success!', url: req.url });
 })
 
 

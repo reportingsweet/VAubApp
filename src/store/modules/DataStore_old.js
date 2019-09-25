@@ -196,10 +196,60 @@ const actions = {
 
   async getAllReminders ({ state, commit, rootState }, payload) {
    
-    var reminders = API.get('mainappapi2', '/g/Reminders')
-      .catch(err => { console.log("getAllReminders Error:", err)})
+    // var reminders = require('../data/tickler_export.JSON')
+    var reminders = []
 
-      console.log("STORE REMINDERS:", reminders)
+    if(payload) {
+
+      console.log("getAllReminders")
+      reminders = payload.Reminders
+      // console.log("STORE reminders", reminders)
+
+      if(payload.isImport) {
+        var dbName = 'Reminders'
+        var version = 1
+        var request = indexedDB.open(dbName, version)
+      
+
+        request.onsuccess = async function(event) {
+            console.log("STORE IndexedDB Success")
+            var db = event.target.result
+          //   db.createObjectStore(["Cases"], { keyPath: 0})
+            console.log("STORE db", db)
+
+            var tx = db.transaction(["Reminders"], "readwrite")
+
+            // console.log(tx)
+            tx.onerror = function(event) {
+                console.log("STORE Transaction Error:", event)
+            }
+            console.log("STORE Creating dataStore")
+
+            var objStore = tx.objectStore("Reminders")
+
+            console.log("STORE adding data to store")
+            objStore.put(payload.Reminders, 0)
+            objStore = undefined
+            tx = undefined
+            db.close()
+    
+          }
+
+        request.onupgradeneeded = async function(event) {
+          console.log("STORE onupgradeneeded Create DB", dbName)
+          var db = event.target.result
+          var objStore = db.createObjectStore("Reminders")
+        //   objStore.add(JSON.stringify(payload.Cases), 0)
+        }
+
+        request.onerror = function (event ) {
+            console.log("STORE IndexedDB Error:", event)
+        }
+
+        request = undefined
+      }
+    }
+        
     
     commit('SET_ALL_REMINDERS', { reminders })
   },

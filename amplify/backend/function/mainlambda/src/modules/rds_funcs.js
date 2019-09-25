@@ -24,24 +24,17 @@ var atob = require('atob')
 ///////////////////////////////////////////////////////////////////////////////////////////////*/
 
 var postPlacements = async (req, res, base64Encoded) => {
-
   var step = 0
   var placementsLength = 0
-
   var today = new Date()
-
   try {
     step = 1
     const binData = atob(base64Encoded)
-
     step = 2
     const strData = await pako.inflate(binData, { to: 'string' })
-
     step = 3
     const placements = await JSON.parse(strData)
-
     placementsLength = placements.length
-
     var query = "INSERT INTO Placements (" +
       "internal_case_id,account_received_date,account_type,charged_off_date,client_business_type,client_claim_number," + 
       "collector_first_name,collector_last_name,date_entered_in_simplicity,first_delinquency_date,is_closed," + 
@@ -61,7 +54,7 @@ var postPlacements = async (req, res, base64Encoded) => {
     console.dir("QUERY")
     console.log(query)
     console.dir("DATA")
-    console.log("PLACEMENTS", placements)
+    // console.log("PLACEMENTS", placements)
 
     placements.forEach(item => {
       values.push(
@@ -81,40 +74,163 @@ var postPlacements = async (req, res, base64Encoded) => {
         ]
       )
     })
-
     console.log("VALUES", values)
-
-
     var promise = new Promise((resolve, reject) => {
       conn.query(query, [values], (err, result) => {
         // conn.release()
         if (err) {
-
           console.log("MySQL DB Error:", err)
           resolve(err)
-
         } else {
-
           console.log("Placements POST successful!")
           resolve(result)
-
         }
       })
     }).then((results) => { return results })
-
     console.log("PROMISE", promise)
-
     return promise
-
   } catch(error) {
-
     console.log("API postPlacements Error:", error)
-
     return {  error: 1,
-              success: 'fail', 
+              success: 'fail',
+              url: req.url,
               message: 'API_SERVER_ERROR: ' + error + 
                       " AT_STEP: " + step + 
                       " placementLength: " + placementsLength 
+          }
+  }
+}
+
+
+var postRevenue = async (req, res, base64Encoded) => {
+
+  var step = 0
+  var paymentsLength = 0
+  var today = new Date()
+
+  try {
+    step = 1
+    const binData = atob(base64Encoded)
+    step = 2
+    const strData = await pako.inflate(binData, { to: 'string' })
+    step = 3
+    const payments = await JSON.parse(strData)
+    paymentsLength = payments.length
+
+    var query = "INSERT INTO Revenue (" +
+      "Debtor, SSN, AccountNum, ClientClaimNum, Client, PaymentDate," +
+      "Description, Collector, Amount, Agency, ClientAmount, CommPerc, CreatedDate" +
+      ") VALUES ?"
+
+    var values = []
+
+    console.dir("QUERY")
+    console.log(query)
+    console.dir("DATA")
+    console.log("PAYMENTS", payments)
+
+    payments.forEach(item => {
+      values.push(
+        [
+         item.Debtor, item.SSN, item.AccountNum, item.CleintClaimNum, item.Client, item.PaymentDate,
+         item.Descripttion, item.Collector, item.Amount, item.Agency, item.ClientAmount, 
+         item.CommPerc, today
+        ]
+      )
+    })
+
+    console.log("VALUES", values)
+    var promise = new Promise((resolve, reject) => {
+      conn.query(query, [values], (err, result) => {
+        // conn.release()
+        if (err) {
+          console.log("MySQL DB Error:", err)
+          resolve(err)
+        } else {
+          console.log("Revenue POST successful!")
+          resolve(result)
+        }
+      })
+    }).then((results) => { return results })
+    console.log("PROMISE", promise)
+    return promise
+  } catch(error) {
+    console.log("API postRevenue Error:", error)
+
+    return {  error: 1,
+              success: 'fail',
+              url: req.url,
+              message: 'API_SERVER_ERROR: ' + error + 
+                      " AT_STEP: " + step + 
+                      " paymentsLength: " + paymentsLength,
+              result: {}
+          }
+  }
+}
+
+
+var postReminders = async (req, res, base64Encoded) => {
+
+  var step = 0
+  var remindersLength = 0
+  var today = new Date()
+
+  try {
+    step = 1
+    const binData = atob(base64Encoded)
+    step = 2
+    const strData = await pako.inflate(binData, { to: 'string' })
+    step = 3
+    const reminders = await JSON.parse(strData)
+    remindersLength = reminders.length
+
+    var query = "INSERT INTO Reminders (" +
+      "priority, notes, repeats, due_datetime, completion_date, is_user_group," + 
+      "debtor_name, tickler_type, collector, account_number, CreatedDate" +
+      ") VALUES ?"
+
+    var values = []
+
+    console.dir("QUERY")
+    console.log(query)
+    console.dir("DATA")
+    console.log("REMINDERS", reminders)
+
+    reminders.forEach(item => {
+      values.push(
+        [
+         item.priority, item.notes, item.repeates, item.due_datetime,
+         item.completion_date, item.is_user_group, item.debtor_name,
+         item.tickler_type, item.collector, item.account_number, today
+        ]
+      )
+    })
+
+    console.log("VALUES", values)
+    var promise = new Promise((resolve, reject) => {
+      conn.query(query, [values], (err, result) => {
+        // conn.release()
+        if (err) {
+          console.log("MySQL DB Error:", err)
+          resolve(err)
+        } else {
+          console.log("Reminders POST successful!")
+          resolve(result)
+        }
+      })
+    }).then((results) => { return results })
+    console.log("PROMISE", promise)
+    return promise
+  } catch(error) {
+    console.log("API postReminders Error:", error)
+
+    return {  error: 1,
+              success: 'fail',
+              url: req.url,
+              message: 'API_SERVER_ERROR: ' + error + 
+                      " AT_STEP: " + step + 
+                      " remindersLength: " + remindersLength,
+              result: {}
           }
   }
 }
@@ -127,37 +243,48 @@ var postPlacements = async (req, res, base64Encoded) => {
 var postDataTable = (req, res) => {
   if (req.body.DataSource == 'All_Data') {
     postPlacements(req, res, req.body.Data)
+  } else if (req.body.DataSource == 'Acct_Summary') {
+    postRevenue(req, res, req.body.Data) 
+  } else if (req.body.DataSource == 'Tickler_Report') {
+    postReminders(req, res, req.body.Data)
+  } else {
+    res.send({ error: 1, 
+               success: 'postDataTable Fail',
+               url: req.url,
+               message: 'DataSource not found', 
+               result: {} })
   }
 }
 
 var truncateDataTable = async (req, res) => {
-
-  if(req.body.DataSource == 'All_Data') {
-
-    var query = await "truncate table reportingsweet.Placements"
-  
-  }
-
   try {
+    var dataSource = req.body.DataSource
+    if(dataSource == 'All_Data') {
+      var query = await "truncate table reportingsweet.Placements"
+    } else if(dataSource == 'Tickler_Report') {
+      var query = await "truncate table reportingsweet.Reminders"
+    } else if (dataSource == 'Acct_Summary') {
+      var query = await "truncate table reportingsweet.Revenue"
+    } else {
+      throw "DataSource not found"
+    }
     var promise = new Promise((resolve, reject) => {
       conn.query(query, (error, result) => {
         // conn.release()
         if(error) {
           console.log("MYSQL DB ERROR:", error)
           resolve(error)
-          // res.send({ error: 1, success: "Placements TRUNCATE Failed", code: 0, result: err })
         } else {
-          // res.send({ error: 0, success: "Placements TRUNCATE successful", code: 0, result: result })
-          console.log("RESULT", result)
+          // console.log("RESULT", result)
           resolve(result)
         }
       })
     }).then((results) => { return results })
   
-    return promise
+    return { result: promise, error: 0 }
   } catch(e) {
     console.log("MYSQL TRUNCATE TABLE ERROR:", e)
-    return "MYSQL TRUNCATE TABLE ERROR: " + e
+    return { result: "MYSQL TRUNCATE TABLE ERROR: " + e, error: 1 }
   }
 
 
@@ -168,16 +295,53 @@ var truncateDataTable = async (req, res) => {
 ///////////////////////////////////////////////////////////////////////////////////////////////*/
 
 
+var getReminders = (req, res) => {
+  try {
+    var query = "select * from reportingsweet.Reminders;"
+    var promise = new Promise((resolve, reject) => {
+
+
+        conn.query(query, (error, results) => {
+          // conn.release()
+          if(error) {
+            console.log("MYSQL DB ERROR:", error)
+            resolve(error)
+          } else {
+
+
+            // console.log("REMINDERS RESULTS:", results)
+            var str = JSON.stringify(results)
+
+            var deflate = pako.deflate(str, { to: 'string' })
+
+            var payload = btoa(deflate)
+
+            resolve(payload)
+
+
+          }
+        })
+      }).then((results) => { return results })
+
+
+
+    return promise
+  } catch(e) {
+    console.log("MYSQL SELECT TABLE ERROR:", e)
+    return { result: "MYSQL SELECT TABLE ERROR: " + e, error: 1 }
+  }
+}
+
 var listTables = (req, res) => {
   try {
     var promise = new Promise((resolve, reject) => {
-      conn.query('show tables', function (error, results, fields) {
+      conn.query('show tables', (error, results, fields) => {
         // conn.release()
         if (error) {
             console.log(error)
             resolve(error)
         } else {
-            console.log("INSIDE CONN results:", results);
+            // console.log("INSIDE CONN results:", results);
             resolve(results)
             // conn.end(function (err) { if(err) console.log(err) })
         }
@@ -196,6 +360,8 @@ module.exports = {
   postPlacements,
   postDataTable,
   truncateDataTable,
+
+  getReminders,
 
   listTables
 

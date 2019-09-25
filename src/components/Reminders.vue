@@ -189,6 +189,8 @@ export default {
 /*REDFLAG*/
 // This dispatch won't be needed after DEV
         this.$store.dispatch('getAllCases', { CallLoc: 'Reminders.created()'})
+        this.$store.dispatch('getAllReminders')
+
         
     },
     computed: {

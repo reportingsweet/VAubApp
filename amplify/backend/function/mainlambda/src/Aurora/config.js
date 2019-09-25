@@ -1,8 +1,8 @@
 var config = {
-  host: "mysql-ft-1.cjfq1xeby8cp.us-east-1.rds.amazonaws.com",
-  user: "admin",
+  host: "",
+  user: "",
   password: "",
-  database: "reportingsweet",
+  database: "",
 }
 
 module.exports = config

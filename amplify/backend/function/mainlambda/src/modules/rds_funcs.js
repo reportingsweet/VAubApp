@@ -17,7 +17,7 @@ var conn = mysql.createPool({
 
 const pako = require('pako')
 var atob = require('atob')
-
+var btoa = require('btoa')
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////
   HANDLE FUNCS
@@ -310,13 +310,13 @@ var getReminders = (req, res) => {
 
 
             // console.log("REMINDERS RESULTS:", results)
-            var str = JSON.stringify(results)
+            // var str = JSON.stringify(results)
 
-            var deflate = pako.deflate(str, { to: 'string' })
+            // var deflate = pako.deflate(str, { to: 'string' })
 
-            var payload = btoa(deflate)
+            // var payload = btoa(deflate)
 
-            resolve(payload)
+            resolve(results)
 
 
           }

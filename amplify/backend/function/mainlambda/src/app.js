@@ -43,7 +43,7 @@ var app = express()
 app.use(bodyParser.json({ limit: '50mb', type: 'application/json' }))
 app.use(express.static('public'))
 app.use(awsServerlessExpressMiddleware.eventContext())
-app.use(compression())
+// app.use(compression())
 
 // Enable CORS for all methods
 app.use(function(req, res, next) {
@@ -51,6 +51,8 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*")
   
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+
+  // res.header("Accept-Encoding: identity")
 
 
 
@@ -426,11 +428,14 @@ app.get('/g/PlacementVintages', function(req, res) {
 
 app.get('/g/Reminders', async function(req, res) {
   try {
-    var result = await rds_funcs.getReminders()
+    var result = await rds_funcs.getReminders().then((data) => { return data })
 
     console.log("API CALL RESULT:", result)
 
-    res.send({ error: 0, success: 'Reminders call succeeded', url: req.url, result: JSON.stringify(result) })
+    res.send({  statusCode: 201,                
+                body: JSON.stringify(result),
+                isBase64Encoded: true 
+      })
   } catch(e) {
     res.send({ error: 1, success: 'Reminders call Failed', url: req.url, result: e })
   }

@@ -198,10 +198,12 @@ const actions = {
    
     var reminders = API.get('mainappapi2', '/g/Reminders')
       .catch(err => { console.log("getAllReminders Error:", err)})
-
-      console.log("STORE REMINDERS:", reminders)
-    
-    commit('SET_ALL_REMINDERS', { reminders })
+    reminders.then(async response => {
+      if(response) {
+        var parsed = await JSON.parse(response.body)
+        commit('SET_ALL_REMINDERS', { reminders: parsed })
+      }
+    }, error => { console.log(error) })
   },
 
   async getAllCases({ state, commit }, payload) {
@@ -315,6 +317,7 @@ const mutations = {
     state.testPVins = pVins
   },
   SET_ALL_REMINDERS: (state, { reminders }) => {
+    console.log("SETTING REMINDERS", reminders)
     state.allReminders = reminders
   },
   SET_ALL_CASES: (state, { cases }) => {

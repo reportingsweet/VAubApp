@@ -8,6 +8,8 @@
     <!-- <div> -->
 
         <b-row>
+
+          <!-- <b-btn @click="getReminders">Get Reminders</b-btn> -->
          
                  <b-form-group horizontal label="Search" style="font-weight: bold; margin-left: 20px;" class="mb-0">
                     <b-input-group size="sm">
@@ -277,7 +279,7 @@ export default {
                   var objectStore = tx                
                   if(objectStore)  
                       objectStore.get(0).onsuccess = function (event) {
-                          self.$store.dispatch('getAllReminders', { Reminders: event.target.result, isImport: 0 }) 
+                          // self.$store.dispatch('getAllReminders', { Reminders: event.target.result, isImport: 0 }) 
                       }
 
                   db.close()
@@ -301,7 +303,7 @@ export default {
 
 
         remindersArr() {   
-            console.log("Computing remindersArr")
+            console.log("Computing remindersArr", this.allReminders)
             // var cache = this.IDXdbReminders
             if(this.allReminders) return Object.values(this.allReminders)
             this.IDXdbReminders
@@ -506,6 +508,10 @@ export default {
         
     },
     methods: {
+
+        getReminders() {
+          this.$store.dispatch('getAllReminders')
+        },
         removeLocalData() {
 
         },
@@ -590,7 +596,7 @@ export default {
 
                         self.importedJSON = await XL_row_object
                         // self.remindersArr = await XL_row_object
-                        self.$store.dispatch('getAllReminders', { Reminders: XL_row_object, isImport: 1 })
+                        // self.$store.dispatch('getAllReminders', { Reminders: XL_row_object, isImport: 1 })
   
                     })        
                 }

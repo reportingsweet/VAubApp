@@ -3,6 +3,5 @@ var config = {
   user: "",
   password: "",
   database: "",
-}
-
-module.exports = config
+ }
+ module.exports = config

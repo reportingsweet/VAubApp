@@ -101,6 +101,16 @@ var postPlacements = async (req, res, base64Encoded) => {
   }
 }
 
+var dateFormatter = (value) => {
+  if(!value) return null
+  var date = new Date(value)
+  var month = date.getMonth() + 1
+  var year = date.getFullYear()
+  var day = date.getDate()
+  var result = year + "-" + month + "-" + day
+  return result
+}
+
 
 var postRevenue = async (req, res, base64Encoded) => {
 
@@ -130,12 +140,22 @@ var postRevenue = async (req, res, base64Encoded) => {
     console.log("PAYMENTS", payments)
 
     payments.forEach(item => {
+      var paymentDate = dateFormatter(item.Date)
+
+      var amount = Number(item.Amount.replace(/[^0-9-\.]+/g, ""))
+      var agency = Number(item.Agency.replace(/[^0-9-\.]+/g, ""))
+      var clientAmount = Number(item.ClientAmount.replace(/[^0-9-\.]+/g, ""))
+
+      var commPerc = item.CommPerc.replace(/[%]+/g, "")
+
       values.push(
+
         [
-         item.Debtor, item.SSN, item.AccountNum, item.CleintClaimNum, item.Client, item.PaymentDate,
-         item.Descripttion, item.Collector, item.Amount, item.Agency, item.ClientAmount, 
-         item.CommPerc, today
+         item.Debtor, item.SSN, item.AccountNum, item.CleintClaimNum, item.Client, paymentDate,
+         item.Descripttion, item.Collector, amount, agency, clientAmount, 
+         commPerc, today
         ]
+
       )
     })
 
@@ -286,45 +306,68 @@ var truncateDataTable = async (req, res) => {
     console.log("MYSQL TRUNCATE TABLE ERROR:", e)
     return { result: "MYSQL TRUNCATE TABLE ERROR: " + e, error: 1 }
   }
-
-
 }
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////
   GET FUNCS
 ///////////////////////////////////////////////////////////////////////////////////////////////*/
 
-
 var getReminders = (req, res) => {
   try {
     var query = "select * from reportingsweet.Reminders;"
     var promise = new Promise((resolve, reject) => {
-
-
         conn.query(query, (error, results) => {
           // conn.release()
           if(error) {
             console.log("MYSQL DB ERROR:", error)
             resolve(error)
           } else {
-
-
-            // console.log("REMINDERS RESULTS:", results)
-            // var str = JSON.stringify(results)
-
-            // var deflate = pako.deflate(str, { to: 'string' })
-
-            // var payload = btoa(deflate)
-
             resolve(results)
-
-
           }
         })
       }).then((results) => { return results })
+    return promise
+  } catch(e) {
+    console.log("MYSQL SELECT TABLE ERROR:", e)
+    return { result: "MYSQL SELECT TABLE ERROR: " + e, error: 1 }
+  }
+}
 
+var getPlacements = (req, res) => {
+  try {
+    var query = "select * from reportingsweet.Placements;"
+    var promise = new Promise((resolve, reject) => {
+        conn.query(query, (error, results) => {
+          // conn.release()
+          if(error) {
+            console.log("MYSQL DB ERROR:", error)
+            resolve(error)
+          } else {
+            resolve(results)
+          }
+        })
+      }).then((results) => { return results })
+    return promise
+  } catch(e) {
+    console.log("MYSQL SELECT TABLE ERROR:", e)
+    return { result: "MYSQL SELECT TABLE ERROR: " + e, error: 1 }
+  }
+}
 
-
+var getRevenue = (req, res) => {
+  try {
+    var query = "select * from reportingsweet.Revenue;"
+    var promise = new Promise((resolve, reject) => {
+        conn.query(query, (error, results) => {
+          // conn.release()
+          if(error) {
+            console.log("MYSQL DB ERROR:", error)
+            resolve(error)
+          } else {
+            resolve(results)
+          }
+        })
+      }).then((results) => { return results })
     return promise
   } catch(e) {
     console.log("MYSQL SELECT TABLE ERROR:", e)
@@ -362,6 +405,8 @@ module.exports = {
   truncateDataTable,
 
   getReminders,
+  getPlacements,
+  getRevenue,
 
   listTables
 

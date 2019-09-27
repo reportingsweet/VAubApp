@@ -16,13 +16,15 @@
                 </b-form-group> -->
 
             </div>
-            <div class="col2">
+
+            <!-- <div class="col2">
                  <div style="margin-left: 10px;" class="large-12 medium-12 small-12 cell">
                     <label>File
                         <input type="file" id="file" ref="file" @change="handleFileUpload()"/>
                     </label>
                 </div>
-            </div>
+            </div> -->
+
         </div>
        
 

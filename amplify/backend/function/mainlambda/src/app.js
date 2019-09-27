@@ -43,6 +43,9 @@ var app = express()
 app.use(bodyParser.json({ limit: '50mb', type: 'application/json' }))
 app.use(express.static('public'))
 app.use(awsServerlessExpressMiddleware.eventContext())
+
+// HAD TO REMOVE compression 9/25/2019
+//causing error when data exceeds 1mb
 // app.use(compression())
 
 // Enable CORS for all methods
@@ -429,18 +432,40 @@ app.get('/g/PlacementVintages', function(req, res) {
 app.get('/g/Reminders', async function(req, res) {
   try {
     var result = await rds_funcs.getReminders().then((data) => { return data })
-
-    console.log("API CALL RESULT:", result)
-
-    res.send({  statusCode: 201,                
+    // console.log("API CALL RESULT:", result)
+    res.send({  statusCode: 200,                
                 body: JSON.stringify(result),
                 isBase64Encoded: true 
       })
   } catch(e) {
     res.send({ error: 1, success: 'Reminders call Failed', url: req.url, result: e })
   }
-  
+})
 
+app.get('/g/Placements', async function(req, res) {
+  try {
+    var result = await rds_funcs.getPlacements().then((data) => { return data })
+    // console.log("API CALL RESULT:", result)
+    res.send({  statusCode: 200,                
+                body: JSON.stringify(result),
+                isBase64Encoded: true 
+      })
+  } catch(e) {
+    res.send({ error: 1, success: 'Placements call Failed', url: req.url, result: e })
+  }
+})
+
+app.get('/g/Revenue', async function(req, res) {
+  try {
+    var result = await rds_funcs.getRevenue().then((data) => { return data })
+    // console.log("API CALL RESULT:", result)
+    res.send({  statusCode: 200,                
+                body: JSON.stringify(result),
+                isBase64Encoded: true 
+      })
+  } catch(e) {
+    res.send({ error: 1, success: 'Revenue call Failed', url: req.url, result: e })
+  }
 })
 
 
@@ -455,7 +480,7 @@ app.post('/p/DataTable', async function(req, res) {
 
   try {
     var result = await rds_funcs.postDataTable(req, res) //.then(data => { return data })
-    res.send({ error: 0, sucess: "DataTable POST successful", url: req.url, result: "" })
+    res.send({ error: 0, sucess: "DataTable POST successful", url: req.url, result: result })
   } catch(e) {
     console.log("DataTable post Failed", e)
     res.send({ error: 1, sucess: "DataTable POST Failed", url: req.url, result: e })

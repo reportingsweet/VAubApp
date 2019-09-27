@@ -62,11 +62,11 @@ const actions = {
 
       if(i == payload.Data.length-1) {
         var str = JSON.stringify(data)
-        console.log(str)
+        // console.log(str)
         var deflate = pako.deflate(str, { to: 'string' })
-        console.log(deflate)
+        // console.log(deflate)
         var sendPayload = btoa(deflate)
-        console.log(sendPayload)
+        // console.log(sendPayload)
         let myInit = {
           body: { Data: sendPayload, DataSource: dataSource },
           isBase64Encoded: true,
@@ -196,9 +196,9 @@ const actions = {
 
   async getAllReminders ({ state, commit, rootState }, payload) {
    
-    var reminders = API.get('mainappapi2', '/g/Reminders')
+    var result = API.get('mainappapi2', '/g/Reminders')
       .catch(err => { console.log("getAllReminders Error:", err)})
-    reminders.then(async response => {
+      result.then(async response => {
       if(response) {
         var parsed = await JSON.parse(response.body)
         commit('SET_ALL_REMINDERS', { reminders: parsed })
@@ -206,104 +206,31 @@ const actions = {
     }, error => { console.log(error) })
   },
 
-  async getAllCases({ state, commit }, payload) {
-    // var cases = require('../data/All_Data.JSON')
-
-    console.log("getAllCases Called from:", payload.CallLoc)
-    var cases = []
-    var caseIdxArr = []
-
-    if(payload) {
-      console.log("getAllCases with payload")
-      
-      console.log("STORE payload", payload)
-
-      if(payload.isImport) {
-        var dbName = 'Cases'
-        var version = 1
-        var request = indexedDB.open(dbName, version)
-       
-
-        request.onsuccess = async function(event) {
-            console.log("STORE IndexedDB Success")
-            var db = event.target.result
-          //   db.createObjectStore(["Cases"], { keyPath: 0})
-            console.log("STORE db", db)
-  
-            var tx = db.transaction(["Cases", "CaseIDX"], "readwrite")
-
-            // var tx_caseIdx = db.transaction(["CaseIDX"], "readwrite")
-  
-            // console.log(tx)
-            tx.onerror = function(event) {
-                console.log("STORE Transaction Error:", event)
-            }
-            console.log("STORE Creating dataStore")
-  
-            var caseTxObj = tx.objectStore("Cases")
-            var caseIdxTxObj = tx.objectStore("CaseIDX")
-            
-            
-
-            Object.keys(payload.Cases)
-              .forEach(key => caseIdxArr[payload.Cases[key].case_number] = key)
-  
-            console.log("STORE adding data to store")            
-            caseTxObj.put(payload.Cases, 0)
-            caseIdxTxObj.put(caseIdxArr, 0)
-
-            cases = payload.Cases
-            // caseIdxArr = caseIdxArr
-
-            commit('SET_ALL_CASES', { cases })
-            commit('SET_ALL_CASE_IDXS', { caseIdxArr })
-
-            caseTxObj = undefined
-            caseIdxTxObj = undefined
-            tx = undefined
-
-            db.close()
-    
-          }
-  
-        request.onupgradeneeded = async function(event) {
-          console.log("STORE onupgradeneeded Create DB", dbName)
-          var db = event.target.result
-          var objStore = db.createObjectStore("Cases")
-          var caseIdxObj = db.createObjectStore("CaseIDX")
-        //   objStore.add(JSON.stringify(payload.Cases), 0)
-        }
-  
-        request.onerror = function (event ) {
-            console.log("STORE IndexedDB Error:", event)
-        }
-
-        request = undefined
-
-      } else {
-        cases = payload.Cases
-        caseIdxArr = payload.CaseIDX
-
-        commit('SET_ALL_CASES', { cases })
-        commit('SET_ALL_CASE_IDXS', { caseIdxArr })
+  async getAllCases ({ state, commit, rootState }, payload) {
+   
+    var result = API.get('mainappapi2', '/g/Placements')
+      .catch(err => { console.log("getAllCases Error:", err)})
+    result.then(async response => {
+      if(response) {
+        var parsed = await JSON.parse(response.body)
+        commit('SET_ALL_CASES', { cases: parsed })
       }
-    }
-
-    
+    }, error => { console.log(error) })
   },
 
-
-
-
-  getAllPayments({ state, commit }, payload) {
-    // var payments = require('../data/AccountSummaryReport.JSON')
-    var payments = []
-    if(payload) {
-        payments = payload
-        localStorage.setItem("Payments", JSON.stringify(payload))
-    }
-    commit('SET_ALL_PAYMENTS', { payments })
+  async getAllPayments ({ state, commit, rootState }, payload) {
+   
+    var result = API.get('mainappapi2', '/g/Revenue')
+      .catch(err => { console.log("getAllPayments Error:", err)})
+    result.then(async response => {
+      if(response) {
+        var parsed = await JSON.parse(response.body)
+        console.log(parsed)
+        commit('SET_ALL_PAYMENTS', { payments: parsed })
+      }
+    }, error => { console.log(error) })
   },
+
 
   async getServerError({ state, commit, rootstate, dispatch }, payload) {
     console.log(payload)

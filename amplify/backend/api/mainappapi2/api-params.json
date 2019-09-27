@@ -27,6 +27,20 @@
             "privacy": {
                 "open": true
             }
+        },
+        {
+            "name": "/g/Placements",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
+        },
+        {
+            "name": "/g/Revenue",
+            "lambdaFunction": "mainlambda",
+            "privacy": {
+                "open": true
+            }
         }
     ],
     "resourceName": "mainappapi2",
@@ -52,5 +66,5 @@
             ]
         }
     ],
-    "uuid": "7492aa3b"
+    "uuid": "5929e7c2"
 }

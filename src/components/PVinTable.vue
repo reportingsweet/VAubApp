@@ -1,14 +1,5 @@
 <template>
-    <div :input="IDXdbCases">
-    <!-- <div> -->
-
-        <!-- <b-btn @click="postPlacements">DYNAMO</b-btn>
-
-        <br />
-        <br />
-
-        <b-btn @click="deletePlacements">DYNAMO_Delete</b-btn> -->
-
+    <div>
         <div style=" text-align:left; max-width:600px;min-width:600px;" class="grid">            
             <b-col style="max-width:400px;min-width:400px;" class="col1">
 
@@ -39,14 +30,6 @@
 
             </b-col>
             <b-col class="col3">
-
-                 <div class="container">
-                    <div class="large-12 medium-12 small-12 cell">
-                        <label>File
-                            <input type="file" id="file" ref="file" @change="handleFileUpload()" /> 
-                        </label>
-                    </div> 
-                </div>
 
             </b-col>            
                
@@ -298,7 +281,7 @@
         </b-card>
 
     </div>
-</template>
+</template> 
 
 
 <script>
@@ -326,19 +309,22 @@ export default {
         }
     },
     watch: {
+        allCases: () => {
+            if(!this.allCases) this.$store.dispatch('getAllCases')
+        },
         importedJSON: function(val) {
             // console.log("WATCHER", val)
             
         },
-       
-         value () {
+        
+        value () { 
             this.setWidth()
         }
     },
     data () {
         return {
             name: '',
-            isImport: 1,
+            isImport: 0,
             client: '(Select All)',
             file: '',
             sortDir: 0,
@@ -403,8 +389,8 @@ export default {
     },
 
     created() {
-        this.$store.dispatch('getAllCases', { CallLoc: 'PVinTable.created()'})
-        this.$store.dispatch('getPVins')
+        // this.$store.dispatch('getAllCases', { CallLoc: 'PVinTable.created()'})
+        // this.$store.dispatch('getPVins')
     },
     
     computed: {
@@ -476,7 +462,7 @@ export default {
  
             if(this.allCases) return Object.values(this.allCases)
             
-            this.IDXdbCases
+            // this.IDXdbCases
             return []
         },
 
@@ -502,8 +488,7 @@ export default {
             var t0 = new Date()
             var vins = []
             var waitTime = 5000
-        
-            // var cases = this.importedJSON ? this.importedJSON : this.casesArr
+    
             var cases = this.casesArr
 
 // Time processing benchmarks            
@@ -529,34 +514,19 @@ export default {
 
                 var clean = []
 
-    /*  REDFLAG */
-    // IMPORT excel vs read file date issue
-  
-            if(this.isImport) {
-            // Import Excel
-                    vintages.forEach(vintage => {
-                        var date = vintage.split('/')
-                        var y = date[2]
-                        var m = date[0]
-                        if(m.length<2) m = '0' + m
-                        clean.push('20' + y + '-' + m + '-' + '01')
-                    })
-            } else {
-            // Read File
-                    vintages.forEach(vintage => {
-                        var date = vintage.split('-')
-                        // console.log(date)
-                        var y = date[0]
-                        var m = date[1]
-                        if(m.length<2) m = '0' + m
-                        clean.push(y + '-' + m + '-' + '01')
-                    })
-            }
-                
-            var cleanVins = [... new Set(clean)]
-        
 
+                vintages.forEach(vintage => {
+                    var date = vintage.split('-')
+                    // console.log(date)
+                    var y = date[0]
+                    var m = date[1]
+                    if(m.length<2) m = '0' + m
+                    clean.push(y + '-' + m + '-' + '01')
+                })
                 
+                    
+                var cleanVins = [... new Set(clean)]
+     
 
                 cleanVins.forEach(vintage => {
                     var kpis = []
@@ -594,34 +564,14 @@ export default {
                     
                     var today = new Date()
 
-
-
-
                     var t0_cases = new Date()
                     cases.forEach(doc => {
- 
+
                         var t0_dateDiffs = new Date()  
- 
-    /*  REDFLAG */
-    // IMPORT excel vs read file date issue
-                        if(this.isImport) {
-                        // Import Excel
-                            var date = doc.date_entered_in_simplicity.split('/')
-                            var y = date[2]
-                            var m = date[0]
-                            var d = date[1]
-                            if(m.length<2) m = '0' + m
-                            var vin_date = '20' + y + "-" + m + "-" + '01'
-                            var simp_date = new Date('20' + y + "-" + m + "-" + d)
-                        } else {
-                        // Read File
-                            var date = doc.date_entered_in_simplicity.split('-')
-                            var vin_date = date[0] + "-" + date[1] + "-" + '01'
-                            var simp_date = new Date(date[0] + "-" + date[1] + "-" + date[2])
-                        }
-                    
-
-
+                        var date = doc.date_entered_in_simplicity.split('-')
+                        var vin_date = date[0] + "-" + date[1] + "-" + '01'
+                        var simp_date = new Date(date[0] + "-" + date[1] + "-" + date[2])
+                        
                         // console.log(mdate)
                         var mcomplaintFiledDate = doc.complaint_filed_date ? new Date(doc.complaint_filed_date) : ""
                         var mcomplaint_summons_served_date = doc.complaint_summons_served_date ? new Date(doc.complaint_summons_served_date) : ""
@@ -632,25 +582,16 @@ export default {
                             FileCount.push(1)
                             doc.is_closed == 'Open' ? OpenFiles.push(1) : ''
                             doc.is_closed == 'Closed' ? ClosedFiles.push(1) : ''
-                            
-
-                            
-
                             ServedCount.push(doc.complaint_summons_served_date != '' && doc.complaint_summons_served_date ? 1 : 0)
                             SuedCount.push(doc.complaint_filed_date ? 1 : 0)
                             JmtCount.push(doc.judgment_amount ?  1 : 0)
 
-
-                                 
                             if(this.isImport) {
 
-                                TotalCollectedCalc.push(doc.total_payments ? doc.total_payments.replace(",","").replace(",","").replace("$","") : 0)
-
-                                TotalOriginalClaimAmt.push(doc.original_claim_amount ? doc.original_claim_amount.replace(",","").replace(",","").replace("$","") : 0)
-
-                                FaceValue.push(doc.current_balance_due ? (isNaN(doc.current_balance_due.replace(",","").replace(",","").replace("$","")) ? 0 : doc.current_balance_due.replace(",","").replace(",","").replace("$","")) : 0)
-
-                                TotalFees.push(doc.current_fees ? doc.current_fees.replace(",","").replace(",","").replace("$","") : 0)
+                                TotalCollectedCalc.push(doc.total_payments)
+                                TotalOriginalClaimAmt.push(doc.original_claim_amount)
+                                FaceValue.push(doc.current_balance_due)
+                                TotalFees.push(doc.current_fees)
 
                             } else {
 
@@ -763,66 +704,6 @@ export default {
    
     methods: {
 
-        postPlacements () {
-
-            let data = [{
-                            Vintage: '2019-01-01', 
-                            UnitYeild: '1',
-                            TotalOriginalClaimAmt: '',
-                            TotalFees: '',
-                            TotalCollectedCalc: '',
-                            TotalOriginalClaimAmt: '',
-                            SuitTillJudgment: '',
-                            SuitRate: '',
-                            SuedCount: '',
-                            ServedCount: '',
-                            ServedConvRate: '',
-                            RecentPmtPct: '',
-                            PlacedTillJudgment: '',
-                            OpenFiles: '',
-                            NetLiquidation: '',
-                            LocalCounselRate: '',
-                            Liquidation: '',
-                            JmtRate: '',
-                            JmtCount: '',
-                            FileCount: '',
-                            FaceValue: '',
-                            ContingencyRate: '',
-                            ComplaintTillService: '',
-                            ClosedFiles: '',
-                            AvgPlacementTillSuit: ''
-
-                        },
-                          { Vintage: '2019-01-01', 
-                            UnitYeild: '1',
-                            TotalOriginalClaimAmt: '',
-                            TotalFees: '',
-                            TotalCollectedCalc: '',
-                            TotalOriginalClaimAmt: '',
-                            SuitTillJudgment: '',
-                            SuitRate: '',
-                            SuedCount: '',
-                            ServedCount: '',
-                            ServedConvRate: '',
-                            RecentPmtPct: '',
-                            PlacedTillJudgment: '',
-                            OpenFiles: '',
-                            NetLiquidation: '',
-                            LocalCounselRate: '',
-                            Liquidation: '',
-                            JmtRate: '',
-                            JmtCount: '',
-                            FileCount: '',
-                            FaceValue: '',
-                            ContingencyRate: '',
-                            ComplaintTillService: '',
-                            ClosedFiles: '',
-                            AvgPlacementTillSuit: ''}]
-
-            // console.log("this.sortedData", this.sortedData)
-            this.$store.dispatch('postPVins', { data: this.sortedData })
-        },
-
         deletePlacements () {
             this.$store.dispatch('deletePVins')
         },
@@ -850,39 +731,27 @@ export default {
         },
 
         async ExcelToJSON (file) {
-                
-                var self = this
-                var reader = new FileReader()
+            var self = this
+            var reader = new FileReader()
 
-                reader.onload = await async function(e) {
+            reader.onload = await async function(e) {
+                var data =  e.target.result
+                var workbook =  await XLSX.read(data, {
+                    type: 'binary'
+                })
 
-                    var data =  e.target.result
-
-                    var workbook =  await XLSX.read(data, {
-                        type: 'binary'
-                    })
-
-                    // console.log(workbook)
-
-                    await workbook.SheetNames.forEach( async (sheetName) => {
-                        // Here is your object
-                        var XL_row_object = await XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName])
-     
-                        // console.log(XL_row_object)
-
-                        self.importedJSON = await XL_row_object
-                        // self.casesArr = await XL_row_object
-                        self.$store.dispatch('getAllCases', { Cases: XL_row_object, isImport: 1, CallLoc: 'PVinTable.ExcelToJSON' })
-                    })
-                }
-
-                reader.onerror = function(ex) {
-                    console.log(ex);
-                }
-
-                // console.log("File", file)
-
-                reader.readAsBinaryString(file)
+                await workbook.SheetNames.forEach( async (sheetName) => {
+                    // Here is your object
+                    var XL_row_object = await XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName])
+                    self.importedJSON = await XL_row_object
+                    // self.casesArr = await XL_row_object
+                    self.$store.dispatch('getAllCases', { Cases: XL_row_object, isImport: 1, CallLoc: 'PVinTable.ExcelToJSON' })
+                })
+            }
+            reader.onerror = function(ex) {
+                console.log(ex);
+            }
+            reader.readAsBinaryString(file)
         },
 
         pVinColumnCheck(columns) {

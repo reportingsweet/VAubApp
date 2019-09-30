@@ -63,7 +63,7 @@
 				"Timeout": "25",
 				"Code": {
 					"S3Bucket": "reportingsweetdev-vthrsdev-20190831120940-deployment",
-					"S3Key": "amplify-builds/mainlambda-596353317a3035727869-build.zip"
+					"S3Key": "amplify-builds/mainlambda-67483956585362483032-build.zip"
 				}
 			}
 		},

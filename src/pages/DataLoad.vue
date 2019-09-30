@@ -140,7 +140,7 @@ export default {
       noFile: true,
 
       sourceNameOptions: ['All_Data', 'Tickler_Report', 'Acct_Summary'],
-      actionOptions: ['Remove', 'Insert', 'Update']
+      actionOptions: ['Remove', 'Update']
 
     }
   },
@@ -167,7 +167,7 @@ export default {
 
       console.log("this.loadedData", this.loadedData)
 
-      if(this.action == 'Insert') {
+      if(this.action == 'Update') {
         await this.$store.dispatch('postDataTable', { Data: this.loadedData, DataSource: this.dataSource })
       } else if (this.action == 'Remove') {
         this.$store.dispatch('truncateDataTable', { DataSource: this.dataSource })

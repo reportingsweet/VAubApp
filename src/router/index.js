@@ -8,7 +8,7 @@ import Login from '@/components/Login'
 import DashboardLayout from '@/pages/Layout/DashboardLayout.vue'
 
 import Reminders from '@/pages/Reminders.vue'
-import Placement from '@/pages/Placement.vue'
+import Placements from '@/pages/Placement.vue'
 import Liquidation from '@/pages/Liquidation.vue'
 import FaceValue from '@/pages/FaceValue.vue'
 
@@ -72,9 +72,9 @@ let router = new Router({
           component: DataLoad
         },
         {
-          path: '/Placement',
+          path: '/Placements',
           name: 'Placement Vintages',
-          component: Placement
+          component: Placements
         },
         {
           path: '/LiquidationCurves',

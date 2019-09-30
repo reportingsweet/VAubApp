@@ -1,18 +1,9 @@
-var AWS = require('aws-sdk')
-var dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
 var pako = require('pako')
 const zlib = require('zlib')
 
 var Base64 = require('js-base64').Base64
 
-
-
-
-
 import { API } from 'aws-amplify'
-
-
-
 
 // initial state
 const state = {
@@ -42,24 +33,12 @@ const getters = {
 // actions
 const actions = {
 
-
-
-
-  async template ({ state, commit, rootState }, payload) {
-    
-  },
-
   async postDataTable ({ state, commit, rootState }, payload) {
-
     var data = []
     var dataSource = await payload.DataSource
-
     console.log("payload.Data", payload.Data)
-
     for(var i = 0; i < payload.Data.length; i++) {
-
       data.push(payload.Data[i])
-
       if(i == payload.Data.length-1) {
         var str = JSON.stringify(data)
         // console.log(str)
@@ -74,18 +53,12 @@ const actions = {
           //   "Content-Encoding": 'gzip'
           // }
         }
-
         var dataPost = await API.post('mainappapi2', '/p/DataTable', myInit)
           .catch(err => { console.log("postDataTable call Error:", err) })
-
         commit('SET_API_RESPONSE', { response: dataPost })
-
       }
-    
     }
-
   },
-
 
 
   async truncateDataTable ({state, commit, rootState}, payload) {
@@ -100,7 +73,6 @@ const actions = {
 
     commit('SET_API_RESPONSE', { response: truncTable})
   },
-
 
 
   async getTableList({ state, commit, rootState }, payload) {
@@ -195,7 +167,6 @@ const actions = {
   },
 
   async getAllReminders ({ state, commit, rootState }, payload) {
-   
     var result = API.get('mainappapi2', '/g/Reminders')
       .catch(err => { console.log("getAllReminders Error:", err)})
       result.then(async response => {
@@ -207,25 +178,31 @@ const actions = {
   },
 
   async getAllCases ({ state, commit, rootState }, payload) {
-   
     var result = API.get('mainappapi2', '/g/Placements')
       .catch(err => { console.log("getAllCases Error:", err)})
     result.then(async response => {
       if(response) {
-        var parsed = await JSON.parse(response.body)
-        commit('SET_ALL_CASES', { cases: parsed })
+        var binData = atob(JSON.parse(response.body))
+        var strData = pako.inflate(binData, { to: 'string' })
+        var cases = JSON.parse(strData)
+        // console.log("getAllCases cases:", cases)
+
+        var caseIdxArr = []
+        Object.keys(cases).forEach(key => caseIdxArr[cases[key].case_number] = key)
+
+        commit('SET_ALL_CASE_IDXS', { caseIdxArr })
+        commit('SET_ALL_CASES', { cases: cases })
       }
     }, error => { console.log(error) })
   },
 
   async getAllPayments ({ state, commit, rootState }, payload) {
-   
     var result = API.get('mainappapi2', '/g/Revenue')
       .catch(err => { console.log("getAllPayments Error:", err)})
     result.then(async response => {
       if(response) {
         var parsed = await JSON.parse(response.body)
-        console.log(parsed)
+        // console.log("getAllPayments payments", parsed)
         commit('SET_ALL_PAYMENTS', { payments: parsed })
       }
     }, error => { console.log(error) })
@@ -244,7 +221,6 @@ const mutations = {
     state.testPVins = pVins
   },
   SET_ALL_REMINDERS: (state, { reminders }) => {
-    console.log("SETTING REMINDERS", reminders)
     state.allReminders = reminders
   },
   SET_ALL_CASES: (state, { cases }) => {

@@ -11,9 +11,9 @@
       <br>
       <mobile-menu slot="content"></mobile-menu>
 
-      <sidebar-link to="/Placement">
+      <sidebar-link to="/Placements">
         <md-icon>dashboard</md-icon>
-        <p>Placement</p>
+        <p>Placements</p>
       </sidebar-link>
 
       <sidebar-link to="/Reminders">

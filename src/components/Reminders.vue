@@ -1,5 +1,5 @@
 <template>
-    <div :cases="IDXdbCases" :reminders="IDXdbReminders">
+    <div>
     <!-- <div> -->
       <b-col v-if="isLoading" >
             <!-- <p style="text-align:left;" ><img class="loader" src="../assets/img/wait-symbol.jpg" style="height:20px;width:20px;"/></p> -->
@@ -20,16 +20,7 @@
                     </b-input-group>
                 </b-form-group>
 
-                <div style="margin-left: 10px;" class="large-12 medium-12 small-12 cell">
-                    <label>File
-                        <input type="file" id="file" ref="file" @change="handleFileUpload()"/>
-                    </label>
-                </div>
 
-                <!-- <div>
-                  <button @click="removeLocalData"> Remove Data</button>
-                </div> -->
-        
         </b-row>
         
         <!-- <b-row> -->
@@ -157,8 +148,9 @@ export default {
             collectorToggle: [],
             importedJSON: [],
             pastDueReminders: [],
-            isImport: 1,
-            isCasesImport: 1,
+            isOnload: 1,
+            isImport: 0,
+            isCasesImport: 0,
             isLoading: 0,
             excelReminders: 'All',
             noTouch5days: [],
@@ -187,13 +179,8 @@ export default {
         }
     },
     created() {
-        // this.$store.dispatch('getAllReminders')
-/*REDFLAG*/
-// This dispatch won't be needed after DEV
-        this.$store.dispatch('getAllCases', { CallLoc: 'Reminders.created()'})
+        this.$store.dispatch('getAllCases')
         this.$store.dispatch('getAllReminders')
-
-        
     },
     computed: {
 
@@ -203,111 +190,10 @@ export default {
             'allCaseIDXs'
         ]),
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/* These need to be in the DataStore */
-        IDXdbCases () {
-          // if(this.allCases&&this.allCaseIDXs) {} else {
-          if(this.allCases) {} else {
-            var self = this
-            var dbName = 'Cases'
-            var version = 1
-            var request = indexedDB.open(dbName, version)
-  /* REDFLAG */
-  // This needs to be commented out
-            // var request  = []
-            console.log("UI IDXdbCases IDXDB Running Check")
-            if(request) {
-                request.onsuccess = function (event) {
-                  console.log("UI IDXdbCases IDXDB On Success")
-                  var db = event.target.result
-                  var tx = db.transaction(["Cases", "CaseIDX"], "readwrite")
-                  // var tx_caseIdx = db.transaction(["Cases"], "readwrite")
-
-                  tx.onerror = function (event) {
-                      console.log("Transaction Error:", event)
-                  }
-
-                  var objectStore = tx.objectStore("Cases")
-        
-                
-                  if(objectStore)  
-                      objectStore.get(0).onsuccess = function (event) {
-                          self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 1, CallLoc: 'PVinTable.IDXdbCases' }) 
-                  }
-                  db.close()
-                              
-                }
-                request.onupgradeneeded = function (event) {
-                  console.log("onupgradeneeded Create IDX DB", dbName)
-                  var db = event.target.result
-                  var casesObj = db.createObjectStore("Cases")
-                  var caseIdxObj = db.createObjectStore("CaseIDX")
-                }
-
-                request.onerror = function (event ) {
-                  console.log("Filtered Data IndexedDB Error:", event)
-                  return []
-                }
-              return []
-            }
-          }
-        },
-
-        IDXdbReminders () {
-
-          if(this.allReminders) {} else {
-
-            var self = this
-            var dbName = 'Reminders'
-            var version = 1
-            var request = indexedDB.open(dbName, version)
-  /* REDFLAG */
-  // This needs to be commented out
-            // var request  = []
-            console.log("UI IDXdbReminders IDXDB Running Check")
-            if(request) {
-                request.onsuccess = function (event) {
-                  console.log("UI IDXdbReminders IDXDB On Success")
-                  var db = event.target.result
-                  var tx = db.transaction(["Reminders"], "readwrite").objectStore("Reminders")
-
-                  tx.onerror = function (event) {
-                      console.log("Transaction Error:", event)
-                  }
-              
-                  var objectStore = tx                
-                  if(objectStore)  
-                      objectStore.get(0).onsuccess = function (event) {
-                          // self.$store.dispatch('getAllReminders', { Reminders: event.target.result, isImport: 0 }) 
-                      }
-
-                  db.close()
-                }
-                request.onupgradeneeded = function (event) {
-                  console.log("onupgradeneeded Create IDX DB", dbName)
-                  var db = event.target.result
-                  var objStore = db.createObjectStore("Reminders")
-                }
-
-                request.onerror = function (event ) {
-                  console.log("Filtered Data IndexedDB Error:", event)
-                  return []
-                }
-              return []
-            }
-          }
-            
-        },
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
         remindersArr() {   
-            console.log("Computing remindersArr", this.allReminders)
-            // var cache = this.IDXdbReminders
+            // console.log("Computing remindersArr", this.allReminders)
             if(this.allReminders) return Object.values(this.allReminders)
-            this.IDXdbReminders
-            return []
+            return [] 
 
         },
         // reminderToggleArr() {
@@ -340,11 +226,11 @@ export default {
     
 
 
-            console.log("Reminders", reminders.length > 0 , "Cases", cases.length > 0, "CaseIDX",  caseIDXs.length > 0)
+            console.log("Reminders", reminders.length > 0 , "Cases", cases.length > 0, "CaseIDX",  caseIDXs.length > 0, "isOnload", this.isOnload)
             if(reminders.length > 0 && cases.length > 0 && caseIDXs.length > 0) {
                this.isLoading = 1
             // if(reminders.length > 0) {
-               console.log("Processing Reminders")
+               console.log("PROCESSING REMINDERS")
             
                 // console.log("cases", cases)
                 
@@ -438,7 +324,7 @@ export default {
 
                                   if(this.isCasesImport) {
                                     // console.log(caseMatch[0])
-                                    PastDueDollar.push(caseMatch ? (isNaN(caseMatch.current_balance_due.replace(",","").replace(",","").replace("$","")) ? 0 : caseMatch.current_balance_due.replace(",","").replace(",","").replace("$","")) : 0)
+                                    PastDueDollar.push(caseMatch ? (isNaN(caseMatch.current_balance_due) ? 0 : caseMatch.current_balance_due) : 0)
                                   } else {
                                     PastDueDollar.push(caseMatch ? caseMatch.current_balance_due : 0)
                                   }   
@@ -481,7 +367,7 @@ export default {
                 var time = t1.getTime() - t0.getTime() 
                 console.log("Reminder data processing benchmark:", time, "ms")
                 this.isLoading = 0
-
+                this.isOnload = 0
 
                 console.log("Rep Reminders Filter processing benchmark:", this.sumArray(repReminderTime), "ms")
                 console.log("Case Match Filter processing benchmark:", this.sumArray(caseMatchTime), "ms")
@@ -508,10 +394,6 @@ export default {
         
     },
     methods: {
-
-        getReminders() {
-          this.$store.dispatch('getAllReminders')
-        },
         removeLocalData() {
 
         },
@@ -841,6 +723,14 @@ export default {
 /// End Export to Excel //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    },
+    watch: {
+      // allCases: () => {
+      //   if(!this.allCases) this.$store.dispatch('getAllCases')
+      // },
+      // allReminders: () => {
+      //   if(!this.allReminders) this.$store.dispatch('getAllReminders')
+      // }
     },
     filters: {
         percFormat (value) {

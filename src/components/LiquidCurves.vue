@@ -1,5 +1,5 @@
 <template>
-    <div :data="filteredData">
+    <div :data="filteredData" :cases="allCases">
         <div class="grid">
             <div class="col1">
 
@@ -19,7 +19,7 @@
 
             <!-- <div class="col2">
                  <div style="margin-left: 10px;" class="large-12 medium-12 small-12 cell">
-                    <label>File
+                    <label>File 
                         <input type="file" id="file" ref="file" @change="handleFileUpload()"/>
                     </label>
                 </div>
@@ -50,8 +50,9 @@ export default {
     data() {
         return {
             name: 'Liquidation Curves',
-            isImport: 1,
-            isCasesImport: 1,
+            isOnload: 1, 
+            isImport: 0,
+            isCasesImport: 0,
             client: '(Select All)',
             chartOptions: {
                 
@@ -217,8 +218,10 @@ export default {
         }
     },
     created () {
-        // this.$store.dispatch('getAllCases')
+        this.$store.dispatch('getAllCases')
         this.$store.dispatch('getAllPayments')
+        // this.allCases
+        // this.allPayments
     },
     computed: {
         ...mapGetters([
@@ -226,54 +229,7 @@ export default {
             'allPayments',
             'allCaseIDXs'
         ]),
-         IDXdbCases () {
-            if(this.allCases) {
-                var self = this
-                var dbName = 'Cases'
-                var version = 1
-                var request = indexedDB.open(dbName, version)
-
-                // var cases = []
-
-                if(request) {
-
-                    request.onsuccess = function (event) {
-                        console.log("IDXdbCases IDXDB On Success")
-                        var db = event.target.result
-                        // console.log(db)
-                    
-                        var tx = db.transaction(["Cases", "CaseIDX"], "readwrite")
-                        // console.log(tx)
-                        tx.onerror = function (event) {
-                            console.log("Transaction Error:", event)
-                        }
-                    
-                        var objectStore = tx.objectStore("Cases")
-            
-                    
-                        if(objectStore)  
-                            objectStore.get(0).onsuccess = function (event) {
-                                self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0, CallLoc: 'LiquidCurves IDXdbCases' }) 
-                            }
-                        db.close()
-                    }
-
-                    request.onupgradeneeded = function (event) {
-                        console.log(" onupgradeneeded Create IDX DB", dbName)
-                        var db = event.target.result
-                        var objStore = db.createObjectStore("Cases")
-                        var caseIdxObj = db.createObjectStore("CaseIDX")
-                    }
-                                                    
-                    request.onerror = function (event ) {
-                        console.log("Filtered Data IndexedDB Error:", event)
-                        return []
-                    }
-                return []
-                }
-            }
-            
-        },
+       
         casesArr() {
             // console.log("this.allCases", this.allCases)
             if(this.allCases) return Object.values(this.allCases)
@@ -285,25 +241,9 @@ export default {
             return creditors
         },
 
-
-
-
         paymentsArr() {
-
-            // if(this.allPayments) return Object.values(this.allPayments)
-            if(localStorage.getItem("Payments")) {
-              // console.log("localStorage Reminders Used")
-              return JSON.parse(localStorage.getItem("Payments"))
-            } else {
-              // console.log("Imported Data Used")
-              return Object.values(this.allPayments)
-            }
-             return []
+            return Object.values(this.allPayments)
         },
-
-
-
-        
 
         creditorAccountNum () {
             return this.lookUpCreditorAccountNum(this.client)
@@ -326,11 +266,9 @@ export default {
                 var cases = this.casesArr
                 // console.log("cases", this.casesArr)
             } else {
-
                 var cases = this.casesArr.filter(doc => {
                     return doc.client_name == this.client
                 })
-
             }
 
             if(this.client=='(Select All)') {
@@ -338,11 +276,7 @@ export default {
             } else {
 
                 var payments = this.paymentsArr.filter(doc => { 
-                    if(this.isImport) {
-                        return doc["Account #"] == this.creditorAccountNum
-                    } else {                           
-                        return doc["Account #"] == this.creditorAccountNum
-                    }                 
+                    return doc["AccountNum"] == this.creditorAccountNum             
                 })
 
             }
@@ -350,78 +284,55 @@ export default {
             // console.log("payments", payments)
 
             var months = []
-            console.log("Liquid Curves Data Check:", "Cases", cases.length > 0, "CaseIDX",  caseIDXs.length > 0, "Payments",  payments.length > 0)
+            console.log("Liquid Curves Data Check:", "Cases", cases.length > 0, "CaseIDX",  caseIDXs.length > 0, "Payments",  payments.length > 0, "isOnload", this.isOnload)
             
-            if(cases.length > 0 && payments.length > 0 && caseIDXs.length > 0) {
+            if(cases.length > 0 && payments.length > 0 && this.isOnload) {
 
             // console.log("payments", payments)
             // Process payments data
                 console.log("Process Payments")
                 var t0_pmtProcess = new Date()
+
+
                 payments.forEach(rec => {
 
-                    if(this.isImport) {        
-                        var case_number = rec["Account #"]
-                    } else {             
-                        var case_number = rec["Account.."]
-                    }
-
+                    var case_number = rec["AccountNum"]
                     var caseKey = caseIDXs[case_number]
                     var account = cases[caseKey]
 
                     if(account) {
-/*  REDFLAG */
-// IMPORT excel vs read file date issue
-                        if(this.isCasesImport) {            
-                        // Import Excel
-                            var date = account.date_entered_in_simplicity.split('/')
-                            var y = date[2]
-                            var m = date[0]
-                            if(m.length<2) m = '0' + m
-                            var vinDate = '20' + y + '-' + m + '-' + '01'
-                        } else {
-                        // Read File
-                            var date = account.date_entered_in_simplicity.split('-')
-                            var vinDate = date[0] + "-" + date[1] + "-" + '01'
-                        }                  
 
-                            var vintage_date = moment(vinDate)
-                            var paymentDate = moment(rec.Date)
+                        var date = account.date_entered_in_simplicity.split('-')
+                        var vinDate = date[0] + "-" + date[1] + "-" + '01'
+                        var vintage_date = moment(vinDate)
 
-                            rec.Vintage = vinDate
-                            rec.VinMo = paymentDate.diff(vintage_date, "months")
+                        var paymentDate = moment(rec.PaymentDate)
+
+                        rec.Vintage = vinDate
+                        rec.VinMo = paymentDate.diff(vintage_date, "months")
                     }
 
                 })
+
+                // console.log("PROCESSED PAYMENTS",  payments)
                 var t1_pmtProcess = new Date()
                 var time_pmtProcess = t1_pmtProcess.getTime() - t0_pmtProcess.getTime()
             // Get clean vintages
-                var vintages = [... new Set(cases.map(s => s.date_entered_in_simplicity))]
+                var vintages = [... new Set(cases.map(s => s.date_entered_in_simplicity))]                
                 var clean = []
 
-/*  REDFLAG */
-// IMPORT excel vs read file date issue
-            if(this.isCasesImport) {   
-            // Import Excel
-                vintages.forEach(vintage => {
-                    var date = vintage.split('/')
-                    var y = date[2]
-                    var m = date[0]
-                    if(m.length<2) m = '0' + m
-                    clean.push('20' + y + '-' + m + '-' + '01')
-                })
-            } else {
-            // Read File
+
                 vintages.forEach(vintage => {
                     var date = vintage.split('-')
                     var y = date[0]
                     var m = date[1]
                     clean.push(y + '-' + m + '-' + '01')
                 })
-            }
-            
+
+                // console.log("VINTAGES", vintages)            
                 var cleanVins = [... new Set(clean)]
-                var vins = [] 
+                var vins = []
+                // console.log("CLEAN VINS", cleanVins)
 
             // Get minDate to set VinMos array
                 var minDate = cleanVins[0]
@@ -430,23 +341,24 @@ export default {
                 var vinLength = today.diff(minDate, "months")
                 months = vinLength
 
+                // console.log("VIN LENGTH", vinLength)
 
-                console.log("Build Vintages")
+
+                // console.log("BUILD VINTAGES")       
                 cleanVins.forEach(vintage => {
 
                     var kpis = []
                     var PlacedAmount = []
                     var TotalCollected = []
-
+                    
                     var vinMonths = []
+
+                    // FOR each vintage in clean Vin
                     vinMonths[vintage] = []
-
-
 
                 // Vin Months for each Vintage
                     for(var i = 0; i<vinLength;i++) {
-                        vinMonths[vintage][i] = []
-            
+                        vinMonths[vintage][i] = []            
                     }
                     // console.log(vinMonths)
 
@@ -454,21 +366,10 @@ export default {
                         var t0_filtercases = new Date()
                         var filterCases = cases.filter(item => {
 
-/*  REDFLAG */
-// IMPORT excel vs read file date issue
-                            if(this.isCasesImport) {
-                            // Import Excel
-                                var date = item.date_entered_in_simplicity.split('/')
-                                var y = date[2]
-                                var m = date[0]
-                                if(m.length<2) m = '0' + m
-                                return '20' + y + "-" + m + "-" + '01' == vintage
 
-                            } else {
-                             // Read File
-                                var date = item.date_entered_in_simplicity.split('-')
-                                return date[0] + "-" + date[1] + "-" + '01' == vintage
-                            }
+                            var date = item.date_entered_in_simplicity.split('-')
+                            return date[0] + "-" + date[1] + "-" + '01' == vintage
+                       
 
                         })
                         var t1_filtercases = new Date()
@@ -479,62 +380,27 @@ export default {
                         var t0_cases = new Date() 
 
                         filterCases.forEach(doc => {
-
                             var mdate = moment(date)
-
-
-/*  REDFLAG */
-// IMPORT excel vs read file date issue
-                            if(this.isCasesImport) {  
-                            // Import Excel
-                                var date = doc.date_entered_in_simplicity.split('/')
-                                var y = date[2]
-                                var m = date[0]
-                                if(m.length<2) m = '0' + m
-                                var vin_date = '20' + y + "-" + m + "-" + '01'
-                            } else {
-                            // Read File
-                                var date = doc.date_entered_in_simplicity.split('-')
-                                var vin_date = date[0] + "-" + date[1] + "-" + '01'
-                            }
+                            var date = doc.date_entered_in_simplicity.split('-')
+                            var vin_date = date[0] + "-" + date[1] + "-" + '01'
+                      
 
                         // Only payments for place vin cases
                             // console.log(payments)
                             var filterPayments = payments.filter(payData => {
-                                if(this.isImport) {
-                            
-                                    return payData["Account #"] == doc.case_number
-                                } else {
-                           
-                                    return payData["Account.."] == doc.case_number
-                                
-                                }
-                                
+                                // console.log(payData["AccountNum"], "==", doc.case_number, payData["AccountNum"] == doc.case_number)
+                                return payData["AccountNum"] == doc.case_number         
                             })
 
-                            // console.log(vintage, filterPayments)
-
                             if(vin_date == vintage) {
-                                
-                                if(this.isCasesImport) {
-
-                                    TotalCollected.push(doc.total_payments ? (isNaN(doc.total_payments.replace(",","").replace(",","").replace("$","")) ? 0 : doc.total_payments.replace(",","").replace(",","").replace("$","")) : 0)
-                                    PlacedAmount.push(doc.original_claim_amount ? (isNaN(doc.original_claim_amount.replace(",","").replace(",","").replace("$","")) ? 0 : doc.original_claim_amount.replace(",","").replace(",","").replace("$","")) : 0)
-                                
-                                } else {
-
-                                    TotalCollected.push(doc.total_payments ? doc.total_payments : 0)
-                                    PlacedAmount.push(doc.original_claim_amount ? doc.original_claim_amount : 0)
-                               
-                               }
-                                
-
+                                TotalCollected.push(isNaN(doc.total_payments) ? 0 : doc.total_payments)
+                                PlacedAmount.push(isNaN(doc.original_claim_amount) ? 0 : doc.original_claim_amount)
                                 // Add payment amount to vintage vin month array
                                 if(filterPayments[0]) {
                                     // console.log("FilterPayment present")
 
                                     if(filterPayments.length > 1) {
-                                        // console.log("FilterPayments > 1")
+                                        // console.log("FilterPayments > 1", filterPayments)
 
                                         filterPayments.forEach(item => {
     /*REDFLAG*/
@@ -542,40 +408,23 @@ export default {
     // What to do with negative vinMos                                        
                                             // console.log(item)
                                             if(isNaN(item.VinMo) || item.VinMo < 0){} else {
-                                                
-                                                var itemAmount = item.Amount ? Number(isNaN(item.Amount.replace(",","").replace(",","").replace("$","")) ? 0 : item.Amount.replace(",","").replace(",","").replace("$","")) : 0
+                                                var itemAmount = item.Amount ? Number(isNaN(item.Amount) ? 0 : item.Amount) : 0
                                                 // console.log(vinMonths[0][Number(item.VinMo)])
                                                 vinMonths[0][Number(item.VinMo)].push(itemAmount)  
-
-                                            }
-                                                                        
+                                            }                            
                                         })
-
                                     } else if(filterPayments.length > 0) {
-                                        // console.log("FilterPayments.length > 0")
     /*REDFLAG*/
     // What to do with negative vinMos
-                                        // console.log(filterPayments[0].VinMo)
-                                        // console.log(vinMonths)
                                         if(filterPayments[0].VinMo<0){} else {
-
-                                            var fpAmount = filterPayments[0].Amount ? Number(isNaN(filterPayments[0].Amount.replace(",","").replace(",","").replace("$","")) ? 0 : filterPayments[0].Amount.replace(",","").replace(",","").replace("$","")) : 0
-                                            // console.log(vinMonths[vintage][filterPayments[0].VinMo])
-    /* REDFLAG */
-    //This was causing an error 
-                                            
-                                            if(vintage&&filterPayments[0].VinMo) {
+                                            var fpAmount = filterPayments[0].Amount ? Number(isNaN(filterPayments[0].Amount) ? 0 : filterPayments[0].Amount) : 0
+                                            if(vintage && filterPayments[0].VinMo) {
                                                 IN += 1
-                                                vinMonths[vintage][filterPayments[0].VinMo].push(fpAmount)  
+                                                vinMonths[vintage][filterPayments[0].VinMo-1].push(fpAmount)  
                                             } else {
                                                 OUT += 1
-
                                             }
-                                            
-
-                                        }
-                                        
-                                        
+                                        }  
                                     }
                                 }                   
                             }
@@ -586,11 +435,7 @@ export default {
 
                         casesTime.push(time_cases)
 
-
                     // console.log(vinMonths[vintage].length)
-
-                    
-
                     // console.log("vintage", vinMonths)
 
                     // Add KPIs to vintage array
@@ -602,8 +447,10 @@ export default {
 
             
                     var t0_cummCurve = new Date()
-                    for(var i = 0; i<vinMonths[vintage].length;i++) {
 
+                    // console.log("BUILD CURVE")
+                    for(var i = 0; i<vinMonths[vintage].length;i++) {
+ 
                     // Dollars in vinMonth
                         // kpis[i] = vinMonths[vintage][i]
         
@@ -611,6 +458,7 @@ export default {
                         //    kpis[i] = (isNaN(vinMonths[vintage][i] / kpis.PlacedAmount) ? 0 : vinMonths[vintage][i] / kpis.PlacedAmount)
 
                     // Cummulative Collection Curve
+                        // console.log(vinMonths[vintage][i])
                         kpis[i] = (isNaN(vinMonths[vintage][i] / kpis.PlacedAmount) ? 0 : vinMonths[vintage][i] / kpis.PlacedAmount) + (kpis[i - 1] ? kpis[i - 1] : 0 )
                         kpis.Rate.push((isNaN(vinMonths[vintage][i] / kpis.PlacedAmount) ? 0 : vinMonths[vintage][i] / kpis.PlacedAmount) + (kpis[i - 1] ? kpis[i - 1] : 0 ))
 
@@ -620,25 +468,16 @@ export default {
                     var time_cummCurve = t1_cummCurve.getTime() - t0_cummCurve.getTime()
                     cummTime.push(time_cummCurve)
 
-
                     kpis.CollectionRate = kpis.TotalCollected ? kpis.TotalCollected / kpis.PlacedAmount : 0
-
-                    
                     vins.push(kpis) 
                 })
 
 
                 // console.log("vins", vins)
 
-
-                
-
-
                 // for(var i = 0; i<months;i++){
-
                 //     this.chartOptions.xAxis[i].categories.push(i)
                 //     this.chartOptions.series[0].data.push(vins[0]['Rate'][i]) 
-
                 // }
 
                 // this.chartOptions.series[0].name = "2015-05-01"
@@ -678,19 +517,19 @@ export default {
                     counter +=1
                 })
 
+                console.log("this.chartOptions.series[counter].name", this.chartOptions.series)
+
                 var t1_vins = new Date()
                 var time_vins = t1_vins.getTime() - t0_vins.getTime()
 
-
-                
-
                 // this.chartOptions.chart.events.redraw()
-
 
                 this.$forceUpdate()
                     
                 var t1 = new Date()
                 var time = t1.getTime() - t0.getTime()
+
+                this.isOnload = 0
 
 
                 console.log("Payment processing benchmark:", time_pmtProcess, "ms")
@@ -727,39 +566,54 @@ export default {
 
         },
 
-        async ExcelToJSON (file) {
-                // return 1
+        // async ExcelToJSON (file) {
+        //         // return 1
 
-                var self = this
-                var reader = new FileReader() 
+        //         var self = this
+        //         var reader = new FileReader() 
 
-                reader.onload = async function(e) {
+        //         reader.onload = async function(e) {
                     
-                    var data =  e.target.result
+        //             var data =  e.target.result
 
-                    var workbook =  await XLSX.read(data, {
-                        type: 'binary'
-                    })
+        //             var workbook =  await XLSX.read(data, {
+        //                 type: 'binary'
+        //             })
 
-                    await workbook.SheetNames.forEach( async (sheetName) => {
+        //             await workbook.SheetNames.forEach( async (sheetName) => {
 
-                        var XL_row_object = await XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName])
+        //                 var XL_row_object = await XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName])
 
-                        self.importedJSON = await XL_row_object
-                        // console.log(XL_row_object)
-                        // self.remindersArr = await XL_row_object
-                        self.$store.dispatch('getAllPayments', XL_row_object)
+        //                 self.importedJSON = await XL_row_object
+        //                 // console.log(XL_row_object)
+        //                 // self.remindersArr = await XL_row_object
+        //                 self.$store.dispatch('getAllPayments', XL_row_object)
   
-                    })        
-                }
+        //             })        
+        //         }
 
-                reader.onerror = function(ex) {
-                    console.log(ex);
-                }
-                reader.readAsBinaryString(file)
+        //         reader.onerror = function(ex) {
+        //             console.log(ex);
+        //         }
+        //         reader.readAsBinaryString(file)
                 
+        // }
+        getCases() {
+            console.log("GET CASES")
+            // this.$store.dispatch('getAllCases')
+        },
+        getAllPayments() {
+            // this.$store.dispatch('getAllPayments')
         }
-    }
+    },
+    watch: {
+      allCases: () => {
+
+      },
+      allPayments: () => {
+
+      }
+    },
 }
 </script>
 

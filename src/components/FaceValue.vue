@@ -1,5 +1,5 @@
 <template>
-    <div :input="IDXdbCases">
+    <div>
     <!-- <div> -->
         <b-card style="max-width: 1000px;margin: 10px auto 0 auto ;">
             <highcharts :options="chartOptions" :data="pVinsArr">                
@@ -22,7 +22,8 @@ export default {
     data () {
         return {
             name: '',
-            isImport: 1,
+            isImport: 0,
+            isOnload: 1,
             chartOptions: {
                 
                 chart: {
@@ -134,108 +135,35 @@ export default {
     },
     
    created() {
-        // this.$store.dispatch('getAllCases', { CallLoc: 'FaceValue created()' })
+        this.$store.dispatch('getAllCases')
     },
     computed: {
         ...mapGetters([
             'allCases'
         ]),
-          IDXdbCases () {
-
-            if(this.allCases) {} else {
-                var self = this
-                var dbName = 'Cases'
-                var version = 1
-                var request = indexedDB.open(dbName, version)
-
-                // var request  = []
-
-                if(request) {
-
-                    request.onsuccess = function (event) {
-                        console.log("IDXdbCases IDXDB On Success")
-                        var db = event.target.result
-                        // console.log(db)
-                    
-                        var tx = db.transaction(["Cases"], "readwrite").objectStore("Cases")
-                        // console.log(tx)
-                        tx.onerror = function (event) {
-                            console.log("Transaction Error:", event)
-                        }
-                    
-                        var objectStore = tx //.objectStore("Cases")
-            
-                    
-                        if(objectStore)  
-                            objectStore.get(0).onsuccess = function (event) {
-                                self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0, CallLoc: 'FaceValue IDXdbCases' }) 
-                            }
-                        // db.close()
-                    }
-
-                    request.onupgradeneeded = function (event) {
-                        console.log(" onupgradeneeded Create IDX DB", dbName)
-                        var db = event.target.result
-                        // var tx = db.transaction('Cases', "readwrite")
-                        // tx.onerror = function (event) {
-                        //     console.log("Transaction Error:", event)
-                        // }
-                        var objStore = db.createObjectStore("Cases")
-                        // db.close()
-                        // var objectStore = tx.objectStore("Cases")
-                        // objStore.add([], 0)
-                    }
-                    
-    
-                    request.onerror = function (event ) {
-                        console.log("Filtered Data IndexedDB Error:", event)
-                        return []
-                    }
-                return []
-                }
-            }
-        },
-         casesArr() {
+        casesArr() {
             // console.log(this.allCases)
             return Object.values(this.allCases)
         },
         pVinsArr() {
             var t0 = new Date()
-            console.log("Face Value isImport", this.isImport)
-            if(this.casesArr) {
+            console.log("casesArr", this.casesArr.length > 0,"isOnload", this.isOnload)
+            if(this.casesArr && this.isOnload) {
                 var cases = this.casesArr
             // console.log(cases)
                 var vintages = [... new Set(this.casesArr.map(s => s.date_entered_in_simplicity))]
                 var clean = []
-
-/*  REDFLAG */
-// IMPORT excel vs read file date issue
-                if(this.isImport) {
-            // Import Excel
-                    vintages.forEach(vintage => {
-                        var date = vintage.split('/')
-                        var y = date[2]
-                        var m = date[0]                    
-                        if(m.length<2) m = '0' + m
-                        clean.push('20' + y + '-' + m + '-' + '01')                
-                    })
-                } else {
-            // Read File
-                    vintages.forEach(vintage => {
-                        var date = vintage.split('-')
-                        // console.log(date)
-                        var y = date[0]
-                        var m = date[1]
-                        if(m.length<2) m = '0' + m
-                        clean.push(y + '-' + m + '-' + '01')
-                    })
-                }
-
-                
+                vintages.forEach(vintage => {
+                    var date = vintage.split('-')
+                    // console.log(date)
+                    var y = date[0]
+                    var m = date[1]
+                    if(m.length<2) m = '0' + m
+                    clean.push(y + '-' + m + '-' + '01')
+                })                
                 var cleanVins = [... new Set(clean)]
-
                 var vins = []
-
+                
                 cleanVins.forEach(vintage => {
                     var kpis = []
                     var FileCount = []
@@ -272,20 +200,9 @@ export default {
 
                     cases.forEach(doc => {
                         
-/*  REDFLAG */
-// IMPORT excel vs read file date issue
-                        if(this.isImport) {
-                    // Import Excel
-                            var date = doc.date_entered_in_simplicity.split('/')
-                            var y = date[2]
-                            var m = date[0]                        
-                            if(m.length<2) m = '0' + m
-                            var vin_date = '20' + y + "-" + m + "-" + '01'                            
-                        } else {
-                    // Read File
-                            var date = doc.date_entered_in_simplicity.split('-')
-                            var vin_date = date[0] + "-" + date[1] + "-" + '01'
-                        }
+                        var date = doc.date_entered_in_simplicity.split('-')
+                        var vin_date = date[0] + "-" + date[1] + "-" + '01'
+               
 
                         var today = moment(new Date())
                         var mdate = moment(date)
@@ -299,11 +216,9 @@ export default {
                             doc.is_closed == 'Open' ? OpenFiles.push(1) : ''
                             doc.is_closed == 'Closed' ? ClosedFiles.push(1) : ''                                    
 
-                            if(this.isImport) {
-                                var balanceDue = doc.current_balance_due ? doc.current_balance_due.replace(/,/gi,"").replace(/[$()]/gi,"") : 0
-                            } else {
-                                var balanceDue = doc.current_balance_due ? doc.current_balance_due : 0
-                            }
+               
+                            var balanceDue = doc.current_balance_due ? doc.current_balance_due : 0
+                           
 
                             // isNaN(balanceDue) ? console.log(vintage, doc.current_balance_due, balanceDue) : ''
                             FaceValue.push(isNaN(balanceDue) ? 0 : balanceDue)
@@ -313,20 +228,12 @@ export default {
                             SuedCount.push(doc.complaint_filed_date ? 1 : 0)
                             JmtCount.push(doc.judgment_amount ?  1 : 0)
 
-                            if(this.isImport) {
-                                TotalCollectedCalc.push(doc.total_payments ? doc.total_payments.replace(",","").replace(",","").replace("$","") : 0)
-
-                                TotalOriginalClaimAmt.push(doc.original_claim_amount ? doc.original_claim_amount.replace(",","").replace(",","").replace("$","") : 0)
-
-                                FaceValue.push(doc.current_balance_due ? (isNaN(doc.current_balance_due.replace(",","").replace(",","").replace("$","")) ? 0 : doc.current_balance_due.replace(",","").replace(",","").replace("$","")) : 0)
-
-                                TotalFees.push(doc.current_fees ? doc.current_fees.replace(",","").replace(",","").replace("$","") : 0)
-                            } else {
-                                TotalCollectedCalc.push(doc.total_payments ? doc.total_payments : 0)
-                                TotalOriginalClaimAmt.push(doc.original_claim_amount ? doc.original_claim_amount : 0)
-                                FaceValue.push(doc.current_balance_due ? doc.current_balance_due : 0)
-                                TotalFees.push(doc.current_fees ? doc.current_fees : 0)
-                            }
+    
+                            TotalCollectedCalc.push(doc.total_payments ? doc.total_payments : 0)
+                            TotalOriginalClaimAmt.push(doc.original_claim_amount ? doc.original_claim_amount : 0)
+                            FaceValue.push(doc.current_balance_due ? doc.current_balance_due : 0)
+                            TotalFees.push(doc.current_fees ? doc.current_fees : 0)
+                            
                             ComplaintSummonsCount.push(doc.complaint_summons_served_date != '' && doc.complaint_summons_served_date ? 1 : 0)
                             ComplaintSentCount.push(doc.complaint_sent_date != '' ? 1 : 0)
 
@@ -354,9 +261,10 @@ export default {
                 kpis.OpenFiles = Number(this.sumArray(OpenFiles)).toLocaleString()
                 kpis.ClosedFiles = Number(this.sumArray(ClosedFiles)).toLocaleString()
 
-                kpis.FaceValue = Number(this.sumArray(FaceValue)).toLocaleString()
+                kpis.FaceValue = Number(this.sumArray(FaceValue))
                 
-                kpis.RecentPmtPct = Number(this.sumArray(RecentPmtFlag).toLocaleString()) / Number(kpis.FileCount)
+                kpis.RecentPmtPct = Number(this.sumArray(RecentPmtFlag)) / Number(kpis.FileCount)
+
                 kpis.ServedCount = Number(this.sumArray(ServedCount))
                 kpis.SuedCount = Number(this.sumArray(SuedCount)).toLocaleString()
                 kpis.SuitRate = kpis.FileCount ? kpis.SuedCount / kpis.FileCount : 0
@@ -387,17 +295,19 @@ export default {
                 kpis.PlacedTillJudgment = Number(this.sumArray(PlacedTillJudgment) / Number(this.sumArray(PlacedTillJudgmentCount)))
 
                 vins.push(kpis)
-            })              
-    
+            })            
+
+                // console.log("VINS", vins)
                 vins.forEach(rec => {
                     
                     this.chartOptions.xAxis[0].categories.push(rec.Vintage)
                     // console.log(rec.FaceValue.replace(",","").replace(",",""))
-                    this.chartOptions.series[0].data.push(Number(rec.FaceValue.replace(",","").replace(",","")))
+                    this.chartOptions.series[0].data.push(Number(rec.FaceValue))
                     // console.log(rec.RecentPmtPct.toFixed(2))
                     this.chartOptions.series[1].data.push(rec.RecentPmtPct ? (rec.RecentPmtPct.toFixed(2)*100) : 0 )
                 })
                 this.$forceUpdate()
+                this.isOnload = 0
                 var t1 = new Date()
                 var time = t1.getTime() - t0.getTime() 
                 console.log("Face Value data processing benchmark:", time, "ms")
@@ -408,15 +318,19 @@ export default {
        
     },
     methods: {
-         sumArray (arr) {
+        sumArray (arr) {
             var total = 0
             arr.forEach(a => {
                 total += Number(a)
             })
             return total
         }
-    }
-    
+    },
+    watch: {
+      allCases: () => {
+        // if(!this.allCases) this.$store.dispatch('getAllCases')
+      }
+    },    
 }
 </script>
 

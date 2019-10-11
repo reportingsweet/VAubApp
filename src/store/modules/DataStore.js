@@ -177,24 +177,37 @@ const actions = {
     }, error => { console.log(error) })
   },
 
+
+
+
   async getAllCases ({ state, commit, rootState }, payload) {
+
+
     var result = API.get('mainappapi2', '/g/Placements')
       .catch(err => { console.log("getAllCases Error:", err)})
+
+
     result.then(async response => {
       if(response) {
         var binData = atob(JSON.parse(response.body))
         var strData = pako.inflate(binData, { to: 'string' })
         var cases = JSON.parse(strData)
-        // console.log("getAllCases cases:", cases)
+        console.log("getAllCases cases:", cases)
 
         var caseIdxArr = []
         Object.keys(cases).forEach(key => caseIdxArr[cases[key].case_number] = key)
 
         commit('SET_ALL_CASE_IDXS', { caseIdxArr })
         commit('SET_ALL_CASES', { cases: cases })
+
+        
       }
     }, error => { console.log(error) })
   },
+
+
+
+
 
   async getAllPayments ({ state, commit, rootState }, payload) {
     var result = API.get('mainappapi2', '/g/Revenue')

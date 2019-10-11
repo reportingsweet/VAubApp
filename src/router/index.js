@@ -14,6 +14,7 @@ import FaceValue from '@/pages/FaceValue.vue'
 
 
 
+import Dash from '@/pages/Dash.vue'
 import OldDash from '@/pages/Dashboard_old.vue'
 import UserProfile from '@/pages/UserProfile.vue'
 import TableList from '@/pages/TableList.vue'
@@ -66,6 +67,11 @@ let router = new Router({
       component: DashboardLayout,
       // redirect: '/dash',
       children: [
+        {
+          path: '/Dash',
+          name: 'Dash',
+          component: Dash
+        },
         {
           path: '/DataLoad',
           name: 'Data Load',

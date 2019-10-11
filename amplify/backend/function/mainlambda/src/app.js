@@ -19,7 +19,7 @@ var bodyParser = require('body-parser')
 var compression = require('compression')
 var awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
 
-var aurora_config = require('./Aurora/config.js')
+var aurora_config = require('./RDS/config.js.js')
 
 // var Base64 = require('js-base64').Base64
 const pako = require('pako')

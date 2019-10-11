@@ -3,8 +3,8 @@
   <md-list-item @click="hideSidebar"
                 v-bind="$attrs">
     <slot>
-      <md-icon>{{link.icon}}</md-icon>
-      <p>{{link.name}}</p>
+      <md-icon class="link-icon">{{link.icon}}</md-icon>
+      <p class="link-name" >{{link.name}}</p>
     </slot>
   </md-list-item>
   
@@ -30,6 +30,10 @@ export default{
     tag: {
       type: String,
       default: 'router-link'
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     }
   },
   methods: {
@@ -42,4 +46,10 @@ export default{
 }
 </script>
 <style>
+  .link-name {
+    z-index: -99 !important;
+  }
+  .link-icon {
+    z-index: -99 !important;
+  }
 </style>

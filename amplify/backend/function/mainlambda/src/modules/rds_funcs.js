@@ -1,18 +1,13 @@
-var aurora_config = require('../Aurora/config.js') 
+var rds_config = require('../RDS/config.js') 
 
 var mysql = require('mysql');
-// var conn = mysql.createConnection({
-//     host: aurora_config.host,
-//     user: aurora_config.user,
-//     password: aurora_config.password,
-//     database: aurora_config.database,
-// });
+
 var conn = mysql.createPool({
     connectionLimit: 100,
-    host: aurora_config.host,
-    user: aurora_config.user,
-    password: aurora_config.password,
-    database: aurora_config.database,
+    host: rds_config.host,
+    user: rds_config.user,
+    password: rds_config.password,
+    database: rds_config.database,
 });
 
 const pako = require('pako')

@@ -2,7 +2,7 @@
   <div class="content">
     <!-- <div class="md-layout"> -->
       <b-card style="background-color: #E5E5E5;min-width:930px;">
-         <p-vin-table>
+         <p-vin-table :data="data">
 
          </p-vin-table>
       </b-card>
@@ -39,6 +39,7 @@ export default{
   data () {
     return {
       name:'Placement',
+      data: "This data",
 
   //     dailySalesChart: {
   //       data: {

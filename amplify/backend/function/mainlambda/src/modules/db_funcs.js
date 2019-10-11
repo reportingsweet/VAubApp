@@ -4,14 +4,14 @@ const db = new AWS.DynamoDB({apiVersion: '2012-08-10', region: 'us-east-1'})
 const documentClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'})
 const dynamo_config = require('../Dynamo/config.js')
 
-var aurora_config = require('../Aurora/config.js')
+var rds_config = require('../RDS/config.js.js')
 
 var mysql = require('mysql');
 var connection = mysql.createConnection({
-    host: aurora_config.host,
-    user: aurora_config.user,
-    password: aurora_config.password,
-    database: aurora_config.database,
+    host: rds_config.host,
+    user: rds_config.user,
+    password: rds_config.password,
+    database: rds_config.database,
 });
 
 const pako = require('pako')

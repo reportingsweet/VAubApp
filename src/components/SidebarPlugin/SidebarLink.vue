@@ -1,7 +1,8 @@
 <template>
 
   <md-list-item @click="hideSidebar"
-                v-bind="$attrs">
+                v-bind="$attrs"
+                >
     <slot>
       <md-icon class="link-icon">{{link.icon}}</md-icon>
       <p class="link-name" >{{link.name}}</p>
@@ -51,5 +52,8 @@ export default{
   }
   .link-icon {
     z-index: -99 !important;
+  }
+  .primary:active {
+    color: black !important;
   }
 </style>

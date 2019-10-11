@@ -4,7 +4,17 @@ import SideBar from './components/SidebarPlugin'
 // asset imports
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.min.css'
+
+
+/* THIS CAUSES BOOTSTRAP NOT TO WORK */
 import './assets/scss/material-dashboard.scss'
+
+// Bootstrap
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+
+
+import 'vue-material/dist/theme/default.css'
 
 // library auto imports
 import 'es6-promise/auto'

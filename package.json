@@ -17,6 +17,7 @@
     "aws-amplify": "^1.1.27",
     "aws-amplify-vue": "^0.2.10",
     "aws-sdk": "^2.451.0",
+    "bootstrap-material-design": "^4.1.1",
     "bootstrap-vue": "^2.0.0-rc.11",
     "downloadjs": "^1.4.7",
     "dynamodb": "^1.2.0",

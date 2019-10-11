@@ -1,9 +1,9 @@
 <template>
 
   <md-toolbar md-elevation="0" style="position:fixed; z-index: 99; background-color: #E5E5E5 !important;">
-      <h3 class="md-title" style="flex: 1;color:#495057 !important;">ReportingSweet</h3>
+      <h3 class="md-title" style="flex: 1;color:#495057 !important;">Reporting</h3>
 
-      <p style="margin:0; color:#495057 !important;margin-right: 10px;">vaubrey@mail.com</p>
+      <p style="margin:0; color:#495057 !important;margin-right: 10px;">crol@mail.com</p>
 
      
         <md-button class="md-icon-button md-arrow" style="background-color: #E5E5E5 !important;color:#17202A !important;" >

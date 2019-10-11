@@ -286,6 +286,7 @@
 
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex'
+
 import JsonExcel from 'vue-json-excel'
 
 
@@ -307,6 +308,11 @@ export default {
                 })
             return formatter.format(value)
         }
+    },
+
+
+    created() {
+        this.$store.dispatch('getAllCases')
     },
     watch: {
         allCases: () => {
@@ -456,7 +462,7 @@ export default {
         },
 
         casesArr() {
-            // console.log(this.allCases)
+            console.log(this.allCases)
             // console.log("this.IDXdbCases", this.IDXdbCases)
 
  
@@ -703,10 +709,11 @@ export default {
     },
    
     methods: {
-
+ 
         deletePlacements () {
             this.$store.dispatch('deletePVins')
         },
+
 
         sumArray (arr) {
             var total = 0

@@ -17,7 +17,17 @@ import { Highcharts, moment } from '@/main'
 
 export default {
     components: {
-        highcharts: Chart 
+        highcharts: Chart
+    },
+    created(){
+        this.$store.dispatch('getAllReminders')
+    },
+    computed: {
+        ...mapGetters([
+            'allReminders',
+            'allCases'
+
+        ])
     },
     data () {
         return {
@@ -163,7 +173,7 @@ export default {
                 })                
                 var cleanVins = [... new Set(clean)]
                 var vins = []
-                
+
                 cleanVins.forEach(vintage => {
                     var kpis = []
                     var FileCount = []

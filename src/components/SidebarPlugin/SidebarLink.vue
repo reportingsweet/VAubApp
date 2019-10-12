@@ -47,13 +47,6 @@ export default{
 }
 </script>
 <style>
-  .link-name {
-    z-index: -99 !important;
-  }
-  .link-icon {
-    z-index: -99 !important;
-  }
-  .primary:active {
-    color: black !important;
-  }
+
+
 </style>

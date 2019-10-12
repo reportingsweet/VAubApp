@@ -2,7 +2,7 @@
   <b-navbar toggleable="md" type="light" variant="light" fixed="top" id="cust-head">
     <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
     <b-navbar-brand>
-      <h3 class="md-title" style="flex: 1;color:#495057 !important;">Reporting</h3>
+      <h3 class="md-title" style="flex: 1;color:#495057 !important;">ReportingSweet</h3>
     </b-navbar-brand>
 
         <b-collapse is-nav id="nav_collapse">
@@ -97,5 +97,8 @@ export default {
   a:hover {
     color: black !important;
   }
-
+  
+  #cust-head {
+    box-shadow: 0 1px 6px lightgray;
+  }
 </style>

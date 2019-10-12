@@ -20,14 +20,7 @@ export default {
         highcharts: Chart
     },
     created(){
-        this.$store.dispatch('getAllReminders')
-    },
-    computed: {
-        ...mapGetters([
-            'allReminders',
-            'allCases'
-
-        ])
+        if(this.isEmptyObject(this.allCases)) { this.$store.dispatch('getAllCases') }
     },
     data () {
         return {
@@ -144,9 +137,6 @@ export default {
         } 
     },
     
-   created() {
-        this.$store.dispatch('getAllCases')
-    },
     computed: {
         ...mapGetters([
             'allCases'
@@ -158,7 +148,6 @@ export default {
         pVinsArr() {
             var t0 = new Date()
             console.log("casesArr", this.casesArr.length > 0,"isOnload", this.isOnload)
-            if(this.casesArr && this.isOnload) {
                 var cases = this.casesArr
             // console.log(cases)
                 var vintages = [... new Set(this.casesArr.map(s => s.date_entered_in_simplicity))]
@@ -173,6 +162,9 @@ export default {
                 })                
                 var cleanVins = [... new Set(clean)]
                 var vins = []
+
+                var casesTime = []
+                var dateDiffTime = []
 
                 cleanVins.forEach(vintage => {
                     var kpis = []
@@ -208,111 +200,128 @@ export default {
                     var UnitYeild = []
                     var ContingencyRate = []
 
+                     var today = new Date()
+
+                    var t0_cases = new Date()
                     cases.forEach(doc => {
-                        
+
+                        var t0_dateDiffs = new Date()  
                         var date = doc.date_entered_in_simplicity.split('-')
                         var vin_date = date[0] + "-" + date[1] + "-" + '01'
-               
-
-                        var today = moment(new Date())
-                        var mdate = moment(date)
-                        var mcomplaintFiledDate = doc.complaint_filed_date ? moment(doc.complaint_filed_date) : ""
-                        var mcomplaint_summons_served_date = doc.complaint_summons_served_date ? moment(doc.complaint_summons_served_date) : ""
-                        var mjudgment_entered_date = doc.judgment_entered_date ? moment(doc.judgment_entered_date) : ""
-                    
+                        var simp_date = new Date(date[0] + "-" + date[1] + "-" + date[2])
+                        
+                        // console.log(mdate)
+                        var mcomplaintFiledDate = doc.complaint_filed_date ? new Date(doc.complaint_filed_date) : ""
+                        var mcomplaint_summons_served_date = doc.complaint_summons_served_date ? new Date(doc.complaint_summons_served_date) : ""
+                        var mjudgment_entered_date = doc.judgment_entered_date ? new Date(doc.judgment_entered_date) : ""
+                
 
                         if(vin_date == vintage) {
                             FileCount.push(1)
                             doc.is_closed == 'Open' ? OpenFiles.push(1) : ''
-                            doc.is_closed == 'Closed' ? ClosedFiles.push(1) : ''                                    
-
-               
-                            var balanceDue = doc.current_balance_due ? doc.current_balance_due : 0
-                           
-
-                            // isNaN(balanceDue) ? console.log(vintage, doc.current_balance_due, balanceDue) : ''
-                            FaceValue.push(isNaN(balanceDue) ? 0 : balanceDue)
-
-                            RecentPmtFlag.push( today.diff(moment(doc.last_payment_date), "days") <= 90 ? 1 : 0)
+                            doc.is_closed == 'Closed' ? ClosedFiles.push(1) : ''
                             ServedCount.push(doc.complaint_summons_served_date != '' && doc.complaint_summons_served_date ? 1 : 0)
                             SuedCount.push(doc.complaint_filed_date ? 1 : 0)
                             JmtCount.push(doc.judgment_amount ?  1 : 0)
-
-    
                             TotalCollectedCalc.push(doc.total_payments ? doc.total_payments : 0)
                             TotalOriginalClaimAmt.push(doc.original_claim_amount ? doc.original_claim_amount : 0)
                             FaceValue.push(doc.current_balance_due ? doc.current_balance_due : 0)
                             TotalFees.push(doc.current_fees ? doc.current_fees : 0)
+
+// 2015-0001 has complaint filed date
+                            // if(doc.case_number == '2015-0001') {
+                            //     console.log("mdate", simp_date)
+                            //     console.log("mcomplaintFiledDate", mcomplaintFiledDate)
+                            // }
                             
+                            RecentPmtFlag.push( this.dateDiff(today, new Date(doc.last_payment_date)) <= 90 ? 1 : 0)
+
                             ComplaintSummonsCount.push(doc.complaint_summons_served_date != '' && doc.complaint_summons_served_date ? 1 : 0)
                             ComplaintSentCount.push(doc.complaint_sent_date != '' ? 1 : 0)
 
                             ComplaintFiledCount.push(doc.complaint_filed_date != '' ? 1 : 0)
 
 
-                            PlacementTillSuit.push( mcomplaintFiledDate ? mdate.diff(mcomplaintFiledDate, "days") : 0)
+                            PlacementTillSuit.push( mcomplaintFiledDate != '' && !isNaN(simp_date) ? (mcomplaintFiledDate < simp_date ? 0 : this.dateDiff(simp_date, mcomplaintFiledDate) ) : 0)
                             PlacementTillSuitCount.push(mcomplaintFiledDate != '' ? 1 : 0)
 
-                            ComplaintTillService.push(mcomplaint_summons_served_date ? mdate.diff(mcomplaint_summons_served_date, "days") : 0)
+
+                            ComplaintTillService.push(mcomplaint_summons_served_date && mcomplaintFiledDate ? (mcomplaint_summons_served_date < mcomplaintFiledDate ? 0 : this.dateDiff(mcomplaintFiledDate, mcomplaint_summons_served_date) ) : 0)
                             ComplaintTillServiceCount.push(mcomplaint_summons_served_date != '' ? 1 : 0)
 
-                            SuitTillJudgment.push(mcomplaintFiledDate ? mcomplaintFiledDate.diff(mjudgment_entered_date, "days") : 0)
+                            SuitTillJudgment.push(mcomplaintFiledDate && mjudgment_entered_date ? this.dateDiff(mcomplaintFiledDate, mjudgment_entered_date) : 0)
                             SuitTillJudgmentCount.push(mjudgment_entered_date != '' ? 1 : 0)
 
-                        PlacedTillJudgment.push(mjudgment_entered_date ? mjudgment_entered_date.diff(mdate, "days") : 0)
-                        PlacedTillJudgmentCount.push(mjudgment_entered_date != '' ? 1 : 0)
+                            PlacedTillJudgment.push(mjudgment_entered_date != '' ? (mjudgment_entered_date < simp_date ? 0 : this.dateDiff(simp_date, mjudgment_entered_date) ) : 0)
+                            PlacedTillJudgmentCount.push(mjudgment_entered_date != '' ? 1 : 0)
 
-                    }
+                            var t1_dateDiffs = new Date()
+                            var time_dateDiffs = t1_dateDiffs.getTime() - t0_dateDiffs.getTime()
+                            dateDiffTime.push(time_dateDiffs)
 
+                        }
+
+                    })
+
+                    var t1_cases = new Date()
+                    var time_case = t1_cases.getTime() - t0_cases.getTime()
+                    casesTime.push(time_case)
+
+                    // Add KPIs to vintage array
+                    kpis.Vintage = vintage
+                    kpis.FileCount = Number(this.sumArray(FileCount)).toLocaleString()
+                    kpis.OpenFiles = Number(this.sumArray(OpenFiles)).toLocaleString()
+                    kpis.ClosedFiles = Number(this.sumArray(ClosedFiles)).toLocaleString()
+                    kpis.FaceValue = Number(this.sumArray(FaceValue)).toLocaleString()
+                    
+                    kpis.RecentPmtPct = Number(this.sumArray(RecentPmtFlag).toLocaleString()) / Number(kpis.FileCount)
+
+                    kpis.ServedCount = Number(this.sumArray(ServedCount))
+                    kpis.SuedCount = Number(this.sumArray(SuedCount)).toLocaleString()
+                    kpis.SuitRate = kpis.FileCount ? kpis.SuedCount / kpis.FileCount : 0
+
+                    // kpis.ComplaintSummonsCount = Number(this.sumArray(ComplaintSummonsCount))
+                    // kpis.ComplaintSentCount =  Number(this.sumArray(ComplaintSentCount))
+                    
+                    kpis.ServedConvRate = Number(this.sumArray(ComplaintSummonsCount)) / Number(this.sumArray(ComplaintSentCount))
+                    kpis.JmtCount = Number(this.sumArray(JmtCount)).toLocaleString()
+                    
+                    kpis.JmtRate = ComplaintFiledCount ? kpis.JmtCount / Number(this.sumArray(ComplaintFiledCount)) : 0
+                    kpis.TotalCollectedCalc = Number(this.sumArray(TotalCollectedCalc))
+                    kpis.TotalFees = Number(this.sumArray(TotalFees))
+                    kpis.TotalOriginalClaimAmt = Number(this.sumArray(TotalOriginalClaimAmt))
+                    kpis.Liquidation = kpis.TotalCollectedCalc / kpis.TotalOriginalClaimAmt
+                    kpis.NetLiquidation = (kpis.TotalCollectedCalc - kpis.TotalFees) / kpis.TotalOriginalClaimAmt
+                    kpis.UnitYeild = 'ND'
+                    kpis.ContingencyRate = 'ND'
+                    kpis.LocalCounselRate = 'ND'
+    /*REDFLAG*/
+    // This is not correct
+                    // console.log("PlacementTillSuit", vintage, PlacementTillSuit)            
+                    // console.log("PlacementTillSuitCount", PlacementTillSuitCount) 
+
+                    kpis.AvgPlacementTillSuit = Math.round(Number(this.sumArray(PlacementTillSuit) / Number(this.sumArray(PlacementTillSuitCount))))
+                    kpis.ComplaintTillService = Math.round(Number(this.sumArray(ComplaintTillService) / Number(this.sumArray(ComplaintTillServiceCount))))
+                    kpis.SuitTillJudgment = Math.round(Number(this.sumArray(SuitTillJudgment) / Number(this.sumArray(SuitTillJudgmentCount))))
+                    kpis.PlacedTillJudgment = Math.round(Number(this.sumArray(PlacedTillJudgment) / Number(this.sumArray(PlacedTillJudgmentCount))))
+
+                    vins.push(kpis)
                 })
-
-                kpis.Vintage = vintage
-                kpis.FileCount = Number(this.sumArray(FileCount)).toLocaleString()
-                kpis.OpenFiles = Number(this.sumArray(OpenFiles)).toLocaleString()
-                kpis.ClosedFiles = Number(this.sumArray(ClosedFiles)).toLocaleString()
-
-                kpis.FaceValue = Number(this.sumArray(FaceValue))
-                
-                kpis.RecentPmtPct = Number(this.sumArray(RecentPmtFlag)) / Number(kpis.FileCount)
-
-                kpis.ServedCount = Number(this.sumArray(ServedCount))
-                kpis.SuedCount = Number(this.sumArray(SuedCount)).toLocaleString()
-                kpis.SuitRate = kpis.FileCount ? kpis.SuedCount / kpis.FileCount : 0
-
-                // kpis.ComplaintSummonsCount = Number(this.sumArray(ComplaintSummonsCount))
-                // kpis.ComplaintSentCount =  Number(this.sumArray(ComplaintSentCount))
-                
-                kpis.ServedConvRate = Number(this.sumArray(ComplaintSummonsCount)) / Number(this.sumArray(ComplaintSentCount))
+            
+            
 
 
 
-                kpis.JmtCount = Number(this.sumArray(JmtCount)).toLocaleString()
-                
-                kpis.JmtRate = ComplaintFiledCount ? kpis.JmtCount / Number(this.sumArray(ComplaintFiledCount)) : 0
-                kpis.TotalCollectedCalc = Number(this.sumArray(TotalCollectedCalc))
-                kpis.TotalFees = Number(this.sumArray(TotalFees))
-                kpis.TotalOriginalClaimAmt = Number(this.sumArray(TotalOriginalClaimAmt))
-                kpis.Liquidation = kpis.TotalCollectedCalc / kpis.TotalOriginalClaimAmt
-                kpis.NetLiquidation = (kpis.TotalCollectedCalc - kpis.TotalFees) / kpis.TotalOriginalClaimAmt
-                kpis.UnitYeild = 'ND'
-                kpis.ContingencyRate = 'ND'
-                kpis.LocalCounselRate = 'ND'
-/*REDFLAG*/
-// This is not correct                
-                kpis.AvgPlacementTillSuit = Number(this.sumArray(PlacementTillSuit) / Number(this.sumArray(PlacementTillSuitCount)))
-                kpis.ComplaintTillService = Number(this.sumArray(ComplaintTillService) / Number(this.sumArray(ComplaintTillServiceCount)))
-                kpis.SuitTillJudgment = Number(this.sumArray(SuitTillJudgment) / Number(this.sumArray(SuitTillJudgmentCount)))
-                kpis.PlacedTillJudgment = Number(this.sumArray(PlacedTillJudgment) / Number(this.sumArray(PlacedTillJudgmentCount)))
 
-                vins.push(kpis)
-            })            
 
                 // console.log("VINS", vins)
                 vins.forEach(rec => {
                     
                     this.chartOptions.xAxis[0].categories.push(rec.Vintage)
+
                     // console.log(rec.FaceValue.replace(",","").replace(",",""))
-                    this.chartOptions.series[0].data.push(Number(rec.FaceValue))
+                    this.chartOptions.series[0].data.push(Number(rec.FaceValue.replace(",","").replace(",","")))
+
                     // console.log(rec.RecentPmtPct.toFixed(2))
                     this.chartOptions.series[1].data.push(rec.RecentPmtPct ? (rec.RecentPmtPct.toFixed(2)*100) : 0 )
                 })
@@ -324,10 +333,35 @@ export default {
                 return this.chartOptions
             }
             
-        }
+        
        
     },
     methods: {
+        isEmptyObject(object) {
+            if ('object' !== typeof object) {
+                throw new Error('Object must be specified.');
+            }
+            if (null === object) {
+                return true;
+            }
+            if ('undefined' !== Object.keys) {
+                // Using ECMAScript 5 feature.
+                return (0 === Object.keys(object).length);
+            } else {
+                // Using legacy compatibility mode.
+                for (var key in object) {
+                    if (object.hasOwnProperty(key)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        },
+        dateDiff (a, b) {
+            const _MS_PER_DAY = 1000 * 60 * 60 * 24
+            return Math.round((a - b)/ _MS_PER_DAY, 0)
+            
+        },
         sumArray (arr) {
             var total = 0
             arr.forEach(a => {

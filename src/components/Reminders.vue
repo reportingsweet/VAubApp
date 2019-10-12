@@ -179,8 +179,8 @@ export default {
         }
     },
     created() {
-        this.$store.dispatch('getAllCases')
-        this.$store.dispatch('getAllReminders')
+        if(this.isEmptyObject(this.allCases)) { this.$store.dispatch('getAllCases') }
+        if(this.isEmptyObject(this.allReminders)) { this.$store.dispatch('getAllReminders') }
     },
     computed: {
 
@@ -394,101 +394,121 @@ export default {
         
     },
     methods: {
-        removeLocalData() {
+      isEmptyObject(object) {
+        if ('object' !== typeof object) {
+            throw new Error('Object must be specified.');
+        }
+        if (null === object) {
+            return true;
+        }
+        if ('undefined' !== Object.keys) {
+            // Using ECMAScript 5 feature.
+            return (0 === Object.keys(object).length);
+        } else {
+            // Using legacy compatibility mode.
+            for (var key in object) {
+                if (object.hasOwnProperty(key)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+      },
+      removeLocalData() {
 
-        },
-        dateDiff (a, b) {
-            const _MS_PER_DAY = 1000 * 60 * 60 * 24
-            return Math.round((b - a)/ _MS_PER_DAY, 0)
-            
-        },
-        addCollector(collector) {
-            this.collectorToggle.push(collector)
-            this.$forceUpdate()
-        },
-        getKeyByValue (object, item, value) {
-          return Object.keys(object).find(key => object[key][value] === item)
-        },
-        forceUpdate() {
-            this.$forceUpdate()
-        },
-         sumArray (arr) {
-            var total = 0
-            arr.forEach(a => {
-                total += Number(a)
-            })
-            return total
-        },
-
-        async downloadToExcelHandle (data) {
-            // console.log(data)
-            if(this.excelReminders=='Past Due') {
-                var reminders = await this.pastDueReminders.filter(doc => {
-                                  return doc.collector == data.Collector
-                                })
-            } else if(this.excelReminders=='All') {
-                // console.log("this.excelReminders=='All'")
-                // console.log(data)
-                var reminders = await this.remindersArr.filter(doc => {
-                                  return doc.collector == data.Collector
-                                })
-                // console.log(reminders)
-            } else if(this.excelReminders=='No Touch - 5 days') { 
-                var reminders = await this.noTouch5days.filter(doc => {
-                                    return doc.collector == data.Collector
-                                  })
-            } else if(this.excelReminders=='No Touch - 30 days') { 
-                var reminders = await this.noTouch30days.filter(doc => {
-                                    return doc.collector == data.Collector
-                                  })
-            } else if(this.excelReminders=='No Touch - 60 days') {
-                var reminders = await this.noTouch60days.filter(doc => {
-                                  return doc.collector == data.Collector
-                                })
-             }
+      },
+      dateDiff (a, b) {
+          const _MS_PER_DAY = 1000 * 60 * 60 * 24
+          return Math.round((b - a)/ _MS_PER_DAY, 0)
           
+      },
+      addCollector(collector) {
+          this.collectorToggle.push(collector)
+          this.$forceUpdate()
+      },
+      getKeyByValue (object, item, value) {
+        return Object.keys(object).find(key => object[key][value] === item)
+      },
+      forceUpdate() {
+            this.$forceUpdate()
+      },
+        sumArray (arr) {
+          var total = 0
+          arr.forEach(a => {
+              total += Number(a)
+          })
+          return total
+      },
 
-            await this.generate(reminders)
-        },
+      async downloadToExcelHandle (data) {
+          // console.log(data)
+          if(this.excelReminders=='Past Due') {
+              var reminders = await this.pastDueReminders.filter(doc => {
+                                return doc.collector == data.Collector
+                              })
+          } else if(this.excelReminders=='All') {
+              // console.log("this.excelReminders=='All'")
+              // console.log(data)
+              var reminders = await this.remindersArr.filter(doc => {
+                                return doc.collector == data.Collector
+                              })
+              // console.log(reminders)
+          } else if(this.excelReminders=='No Touch - 5 days') { 
+              var reminders = await this.noTouch5days.filter(doc => {
+                                  return doc.collector == data.Collector
+                                })
+          } else if(this.excelReminders=='No Touch - 30 days') { 
+              var reminders = await this.noTouch30days.filter(doc => {
+                                  return doc.collector == data.Collector
+                                })
+          } else if(this.excelReminders=='No Touch - 60 days') {
+              var reminders = await this.noTouch60days.filter(doc => {
+                                return doc.collector == data.Collector
+                              })
+            }
+        
 
-        async handleFileUpload(){
+          await this.generate(reminders)
+      },
 
-            this.file = this.$refs.file.files[0]
-            var newFile = await this.ExcelToJSON(this.file)
+      async handleFileUpload(){
 
-        },
+          this.file = this.$refs.file.files[0]
+          var newFile = await this.ExcelToJSON(this.file)
 
-        async ExcelToJSON (file) {
-                // return 1
+      },
 
-                var self = this
-                var reader = new FileReader() 
+      async ExcelToJSON (file) {
+              // return 1
 
-                reader.onload = async function(e) {
-                    
-                    var data =  e.target.result
+              var self = this
+              var reader = new FileReader() 
 
-                    var workbook =  await XLSX.read(data, {
-                        type: 'binary'
-                    })
+              reader.onload = async function(e) {
+                  
+                  var data =  e.target.result
 
-                    await workbook.SheetNames.forEach( async (sheetName) => {
+                  var workbook =  await XLSX.read(data, {
+                      type: 'binary'
+                  })
 
-                        var XL_row_object = await XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName])
+                  await workbook.SheetNames.forEach( async (sheetName) => {
 
-                        self.importedJSON = await XL_row_object
-                        // self.remindersArr = await XL_row_object
-                        // self.$store.dispatch('getAllReminders', { Reminders: XL_row_object, isImport: 1 })
-  
-                    })        
-                }
+                      var XL_row_object = await XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName])
 
-                reader.onerror = function(ex) {
-                    console.log(ex);
-                }
-                reader.readAsBinaryString(file)
-                
-        },
+                      self.importedJSON = await XL_row_object
+                      // self.remindersArr = await XL_row_object
+                      // self.$store.dispatch('getAllReminders', { Reminders: XL_row_object, isImport: 1 })
+
+                  })        
+              }
+
+              reader.onerror = function(ex) {
+                  console.log(ex);
+              }
+              reader.readAsBinaryString(file)
+              
+      },
 
 
 

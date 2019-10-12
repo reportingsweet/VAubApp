@@ -167,6 +167,9 @@ const actions = {
   },
 
   async getAllReminders ({ state, commit, rootState }, payload) {
+
+    console.log("********************************** STORE getAll REMINDERS **********************************")
+
     var result = API.get('mainappapi2', '/g/Reminders')
       .catch(err => { console.log("getAllReminders Error:", err)})
       result.then(async response => {
@@ -181,6 +184,8 @@ const actions = {
 
 
   async getAllCases ({ state, commit, rootState }, payload) {
+
+    console.log("********************************** STORE getAll CASES **********************************")
 
 
     var result = API.get('mainappapi2', '/g/Placements')
@@ -210,6 +215,9 @@ const actions = {
 
 
   async getAllPayments ({ state, commit, rootState }, payload) {
+
+    console.log("********************************** STORE getAll PAYMENTS **********************************")
+
     var result = API.get('mainappapi2', '/g/Revenue')
       .catch(err => { console.log("getAllPayments Error:", err)})
     result.then(async response => {

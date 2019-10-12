@@ -312,12 +312,13 @@ export default {
 
 
     created() {
-        this.$store.dispatch('getAllCases')
+        if(this.isEmptyObject(this.allCases)) {
+            console.log("GETTING CASES")
+            this.$store.dispatch('getAllCases')
+        }
     },
     watch: {
-        allCases: () => {
-            if(!this.allCases) this.$store.dispatch('getAllCases')
-        },
+
         importedJSON: function(val) {
             // console.log("WATCHER", val)
             
@@ -394,11 +395,6 @@ export default {
         }
     },
 
-    created() {
-        // this.$store.dispatch('getAllCases', { CallLoc: 'PVinTable.created()'})
-        // this.$store.dispatch('getPVins')
-    },
-    
     computed: {
         ...mapGetters([
             'allCases'
@@ -411,64 +407,58 @@ export default {
 
         IDXdbCases () {
             // console.log("UI IDXdbCases this.allCases", this.allCases)
-            if(this.allCases) {} else {
+            // if(this.allCases) {} else {
  
-                var self = this
-                var dbName = 'Cases'
-                var version = 1
-                var request = indexedDB.open(dbName, version)
+            //     var self = this
+            //     var dbName = 'Cases'
+            //     var version = 1
+            //     var request = indexedDB.open(dbName, version)
 
-                // var request = []
+            //     // var request = []
 
-                if(request) {
+            //     if(request) {
 
-                    request.onsuccess = function (event) {
-                        console.log("UI IDXdbCases IDXDB On Success")
-                        var db = event.target.result
-                        var tx = db.transaction(["Cases", "CaseIDX"], "readwrite")
+            //         request.onsuccess = function (event) {
+            //             console.log("UI IDXdbCases IDXDB On Success")
+            //             var db = event.target.result
+            //             var tx = db.transaction(["Cases", "CaseIDX"], "readwrite")
                         
-                        // console.log(tx)
-                        tx.onerror = function (event) {
-                            console.log("Transaction Error:", event)
-                        }
+            //             // console.log(tx)
+            //             tx.onerror = function (event) {
+            //                 console.log("Transaction Error:", event)
+            //             }
                     
-                        var objectStore = tx.objectStore("Cases")
+            //             var objectStore = tx.objectStore("Cases")
             
                     
-                        if(objectStore)  
-                            objectStore.get(0).onsuccess = function (event) {
-                                self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0, CallLoc: 'PVinTable.IDXdbCases' }) 
-                            }
-                        db.close()
+            //             if(objectStore)  
+            //                 objectStore.get(0).onsuccess = function (event) {
+            //                     self.$store.dispatch('getAllCases', { Cases: event.target.result, isImport: 0, CallLoc: 'PVinTable.IDXdbCases' }) 
+            //                 }
+            //             db.close()
                 
 
-                    }
+            //         }
 
-                    request.onupgradeneeded = function (event) {
-                        console.log("onupgradeneeded Create IDX DB", dbName)
-                        var db = event.target.result
-                        var objStore = db.createObjectStore("Cases")
-                        var caseIdxObj = db.createObjectStore("CaseIDX")
-                    }
+            //         request.onupgradeneeded = function (event) {
+            //             console.log("onupgradeneeded Create IDX DB", dbName)
+            //             var db = event.target.result
+            //             var objStore = db.createObjectStore("Cases")
+            //             var caseIdxObj = db.createObjectStore("CaseIDX")
+            //         }
 
-                    request.onerror = function (event ) {
-                        console.log("Filtered Data IndexedDB Error:", event)
-                        return []
-                    }
-                return []
-                }
-            }
+            //         request.onerror = function (event ) {
+            //             console.log("Filtered Data IndexedDB Error:", event)
+            //             return []
+            //         }
+            //     return []
+            //     }
+            // }
             
         },
 
         casesArr() {
-            console.log(this.allCases)
-            // console.log("this.IDXdbCases", this.IDXdbCases)
-
- 
-            if(this.allCases) return Object.values(this.allCases)
-            
-            // this.IDXdbCases
+            if(this.allCases) return Object.values(this.allCases)            
             return []
         },
 
@@ -493,7 +483,6 @@ export default {
 
             var t0 = new Date()
             var vins = []
-            var waitTime = 5000
     
             var cases = this.casesArr
 
@@ -591,22 +580,12 @@ export default {
                             ServedCount.push(doc.complaint_summons_served_date != '' && doc.complaint_summons_served_date ? 1 : 0)
                             SuedCount.push(doc.complaint_filed_date ? 1 : 0)
                             JmtCount.push(doc.judgment_amount ?  1 : 0)
+                            TotalCollectedCalc.push(doc.total_payments ? doc.total_payments : 0)
+                            TotalOriginalClaimAmt.push(doc.original_claim_amount ? doc.original_claim_amount : 0)
+                            FaceValue.push(doc.current_balance_due ? doc.current_balance_due : 0)
+                            TotalFees.push(doc.current_fees ? doc.current_fees : 0)
 
-                            if(this.isImport) {
-
-                                TotalCollectedCalc.push(doc.total_payments)
-                                TotalOriginalClaimAmt.push(doc.original_claim_amount)
-                                FaceValue.push(doc.current_balance_due)
-                                TotalFees.push(doc.current_fees)
-
-                            } else {
-
-                                TotalCollectedCalc.push(doc.total_payments ? doc.total_payments : 0)
-                                TotalOriginalClaimAmt.push(doc.original_claim_amount ? doc.original_claim_amount : 0)
-                                FaceValue.push(doc.current_balance_due ? doc.current_balance_due : 0)
-                                TotalFees.push(doc.current_fees ? doc.current_fees : 0)
-
-                            }
+                            
                             
 
 // 2015-0001 has complaint filed date
@@ -714,6 +693,29 @@ export default {
             this.$store.dispatch('deletePVins')
         },
 
+        isEmptyObject(object) {
+            if ('object' !== typeof object) {
+                throw new Error('Object must be specified.');
+            }
+
+            if (null === object) {
+                return true;
+            }
+
+            if ('undefined' !== Object.keys) {
+                // Using ECMAScript 5 feature.
+                return (0 === Object.keys(object).length);
+            } else {
+                // Using legacy compatibility mode.
+                for (var key in object) {
+                    if (object.hasOwnProperty(key)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        },
+
 
         sumArray (arr) {
             var total = 0
@@ -725,7 +727,7 @@ export default {
 
         dateDiff (a, b) {
             const _MS_PER_DAY = 1000 * 60 * 60 * 24
-            return Math.round((b - a)/ _MS_PER_DAY, 0)
+            return Math.round((a - b)/ _MS_PER_DAY, 0)
             
         },
 

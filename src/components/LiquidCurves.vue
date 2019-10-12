@@ -218,10 +218,8 @@ export default {
         }
     },
     created () {
-        this.$store.dispatch('getAllCases')
-        this.$store.dispatch('getAllPayments')
-        // this.allCases
-        // this.allPayments
+        if(this.isEmptyObject(this.allCases)) { this.$store.dispatch('getAllCases') }
+        if(this.isEmptyObject(this.allPayments)) { this.$store.dispatch('getAllPayments') }
     },
     computed: {
         ...mapGetters([
@@ -546,6 +544,27 @@ export default {
         
     },
     methods: {
+
+         isEmptyObject(object) {
+            if ('object' !== typeof object) {
+                throw new Error('Object must be specified.');
+            }
+            if (null === object) {
+                return true;
+            }
+            if ('undefined' !== Object.keys) {
+                // Using ECMAScript 5 feature.
+                return (0 === Object.keys(object).length);
+            } else {
+                // Using legacy compatibility mode.
+                for (var key in object) {
+                    if (object.hasOwnProperty(key)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        },
 
         lookUpCreditorAccountNum (client) {
             return this.casesArr.filter(doc => {return doc.creditor == client }).case_number

@@ -4,14 +4,18 @@ import Vue from 'vue'
 
 import App from './App'
 import router from './router'
-import BootstrapVue from 'bootstrap-vue'
 import store from '@/store'
+
+import BootstrapVue from 'bootstrap-vue'
+// require('bootstrap-material-design')
+
 // import Highcharts from 'highcharts'
 import HighchartsVue from 'highcharts-vue'
 var Highcharts = require('highcharts')
 require('highcharts/modules/exporting')(Highcharts)
 import loadMap from 'highcharts/modules/map'
 import highchartsMore from 'highcharts/highcharts-more'
+
 import moment from 'moment'
 
 import VueRouter from 'vue-router'
@@ -40,9 +44,7 @@ import Notifications from './components/NotificationPlugin'
 // MaterialDashboard plugin
 import MaterialDashboard from './material-dashboard'
 
-// Bootstrap
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
+
 
 highchartsMore(Highcharts)
 loadMap(Highcharts)

@@ -82,6 +82,7 @@
   }
 </style>
 <script>
+
 import TopNavbar from './TopNavbar.vue'
 import ContentFooter from './ContentFooter.vue'
 import DashboardContent from './Content.vue'
@@ -142,12 +143,14 @@ export default {
 
         document.getElementById("sidebar-comp").style.display = "inherit"
         document.getElementById("sidebar-comp").style.transition = "0.5s"
+
         setTimeout(() => {
           document.getElementById("sidebar-comp").style.width = "250px"
         }, 150)
         setTimeout(() => {
-          this.linkIsActive = !this.linkIsActive 
-        }, 200)
+          this.linkIsActive = !this.linkIsActive
+        }, 325)
+
         document.getElementById("sidebar-icon").style.transition = "0.5s"
         document.getElementById("sidebar-icon").style.left = "270px"
       } else {

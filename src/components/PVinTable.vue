@@ -596,7 +596,7 @@ export default {
                             
 
                             
-                            RecentPmtFlag.push( this.dateDiff(today, new Date(doc.last_payment_date)) <= 90 ? 1 : 0)
+                            RecentPmtFlag.push( this.dateDiff(new Date(doc.last_payment_date), today) <= 90 ? 1 : 0)
 
                             ComplaintSummonsCount.push(doc.complaint_summons_served_date != '' && doc.complaint_summons_served_date ? 1 : 0)
                             ComplaintSentCount.push(doc.complaint_sent_date != '' ? 1 : 0)
@@ -727,7 +727,7 @@ export default {
 
         dateDiff (a, b) {
             const _MS_PER_DAY = 1000 * 60 * 60 * 24
-            return Math.round((a - b)/ _MS_PER_DAY, 0)
+            return Math.round((b - a)/ _MS_PER_DAY, 0)
             
         },
 

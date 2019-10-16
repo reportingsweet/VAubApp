@@ -4,7 +4,7 @@ const db = new AWS.DynamoDB({apiVersion: '2012-08-10', region: 'us-east-1'})
 const documentClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'})
 const dynamo_config = require('../Dynamo/config.js')
 
-var rds_config = require('../RDS/config.js.js')
+var rds_config = require('../RDS/config.js')
 
 var mysql = require('mysql');
 var connection = mysql.createConnection({

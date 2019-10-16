@@ -29,5 +29,11 @@
 			]
 		}
 	},
-	"auth": {}
+	"auth": {
+		"ReportingSweetVA1": {
+			"service": "Cognito",
+			"providerPlugin": "awscloudformation",
+			"dependsOn": []
+		}
+	}
 }

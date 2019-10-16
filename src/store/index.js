@@ -4,6 +4,7 @@ import PlaceVin from './modules/PlaceVin'
 import Reminders from './modules/Reminders'
 import Liquid from './modules/Liquid'
 import DataStore from './modules/DataStore'
+import Auth from './modules/Auth'
 
 Vue.use(Vuex)
 
@@ -12,7 +13,8 @@ export default new Vuex.Store({
     PlaceVin,
     Reminders,
     Liquid,
-    DataStore
+    DataStore,
+    Auth
   },
   state: {
 

@@ -19,8 +19,6 @@ var bodyParser = require('body-parser')
 var compression = require('compression')
 var awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
 
-var aurora_config = require('./RDS/config.js.js')
-
 // var Base64 = require('js-base64').Base64
 const pako = require('pako')
 var btoa = require('btoa')
@@ -70,7 +68,7 @@ app.listen(3002, async function() {
 * FILE IMPORTS *
 ********************************************************************************************************/
 
-var db_funcs = require('./modules/db_funcs')
+// var db_funcs = require('./modules/db_funcs')
 var rds_funcs = require('./modules/rds_funcs')
 
 /********************************************************************************************************
@@ -81,9 +79,10 @@ app.get('/g/TableList', async function(req, res) {
 
   try {
     var result = await rds_funcs.listTables() //.then(data => { return data })
-
+    // res.send("Made IT")
     res.send({ error: 0, success: 'TableList call succeeded', url: req.url, result: result })
   } catch (e) {
+    // res.send("Error")
     res.send({ error: 1, success: 'TableList call Failed', url: req.url, result: e })
   }
 

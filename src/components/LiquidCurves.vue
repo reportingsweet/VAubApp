@@ -515,7 +515,7 @@ export default {
                     counter +=1
                 })
 
-                console.log("this.chartOptions.series[counter].name", this.chartOptions.series)
+                // console.log("this.chartOptions.series[counter].name", this.chartOptions.series)
 
                 var t1_vins = new Date()
                 var time_vins = t1_vins.getTime() - t0_vins.getTime()

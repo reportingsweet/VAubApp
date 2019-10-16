@@ -1,5 +1,5 @@
 <template>  
-  <b-navbar toggleable="md" type="light" variant="light" fixed="top" id="cust-head">
+  <b-navbar toggleable="md" type="light" variant="light" fixed="top" id="cust-head" v-if="isLoggedIn">
     <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
     <b-navbar-brand>
       <h3 class="md-title" style="flex: 1;color:#495057 !important;">ReportingSweet</h3>
@@ -24,59 +24,57 @@
 </template>
 
 <script>
-  import { router } from '@/main'
-  const self = this;
-// import { firebase } from '@/main'
+  import { Auth } from 'aws-amplify'
+  import { AmplifyEventBus } from 'aws-amplify-vue'
 
-// const currentUser = firebase.auth().currentUser
-// const isLoggedIn = currentUser?true:false
+  import { router } from '@/main'
+
+  import { mapGetters } from 'vuex'
 
 export default {
   data () {
     return {
         currentPath: '',
-        isLoggedIn: true,
-        currentUser: 'vaubrey@mail.com', //firebase.auth().currentUser?firebase.auth().currentUser.email:''
+        isLoggedIn: false,
         movie: ''
     }
   },
   beforeCreate () {
       // console.log(window.location.pathname)
       this.currentPath = window.location.pathname
-      this.currentUser = 'vaubrey@mail.com', //firebase.auth().currentUser?firebase.auth().currentUser.email:''
       this.currentPath=='/Login'? this.isLoggedIn = false : ''
-      // console.log(firebase.auth().currentUser.email)
-      // console.log(this.currentPath==='/login')
+
   },
   mount() {
     this.currentPath = window.location.pathname
   },
+  computed: {
+    ...mapGetters([
+      'currentUser'
+    ])
+  },
   methods: {
     logOut () {
-      // firebase.auth().signOut().then(() => {
-        console.log("Signing Out...")
-        // this.$router.go('/Login')
-        // this.$router.push({name: 'Login'})
-        // router.push('/Login')
-        this.$router.push('/')
-        this.currentUser = ''
-
-      // })
-      // this.currentUser = ''
+       console.log("Signing Out...")
+       Auth.signOut({ global: true })
+        .then(response => {
+          console.log("signOut response", response)
+          if(!response) { 
+            this.$store.dispatch('setCurrentUser', { username: '' })
+            this.isLoggedIn = false
+            this.$router.push('/Login')
+          }
+        })
+        .catch(err => console.log("signOut Error:", err));
     }
   }
   ,
   watch: {
     $route (to, from) {
-      // console.log(window.location.pathname)
-      // console.log(firebase.auth().currentUser)
-      // console.log(isLoggedIn)
 
-      // if (firebase.auth().currentUser) {
       if (this.currentUser) {
         this.isLoggedIn = true
-        this.currentUser = 'vaubrey@mail.com' //firebase.auth().currentUser?firebase.auth().currentUser.email:''
-        // console.log(this.isLoggedIn)
+        // this.currentUser = 'vaubrey@mail.com' 
       } else {
         this.isLoggedIn = false
         // console.log(this.isLoggedIn)

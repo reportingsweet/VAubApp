@@ -36,7 +36,7 @@ const actions = {
   async postDataTable ({ state, commit, rootState }, payload) {
     var data = []
     var dataSource = await payload.DataSource
-    console.log("payload.Data", payload.Data)
+    // console.log("payload.Data", payload.Data)
     for(var i = 0; i < payload.Data.length; i++) {
       data.push(payload.Data[i])
       if(i == payload.Data.length-1) {
@@ -197,7 +197,7 @@ const actions = {
         var binData = atob(JSON.parse(response.body))
         var strData = pako.inflate(binData, { to: 'string' })
         var cases = JSON.parse(strData)
-        console.log("getAllCases cases:", cases)
+        // console.log("getAllCases cases:", cases)
 
         var caseIdxArr = []
         Object.keys(cases).forEach(key => caseIdxArr[cases[key].case_number] = key)

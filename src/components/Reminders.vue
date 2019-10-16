@@ -99,7 +99,7 @@
                                                         <a style="font-size:14px;font-weight:720;">Account: </a>{{ reminder.account_number }}
                                                     </div>
                                                     <div style="max-width:300px;min-width:100px;text-align:left;">
-                                                        <a style="font-size:14px;font-weight:720;">DateDue: </a>{{ reminder.due_datetime | dateTruncate8 }}
+                                                        <a style="font-size:14px;font-weight:720;">DateDue: </a>{{ reminder.due_datetime | dateTruncateTen }}
                                                     </div>
                                                     <div style="max-width:300px;min-width:100px;text-align:left;">
                                                         <span :title="reminder.tickler_type">

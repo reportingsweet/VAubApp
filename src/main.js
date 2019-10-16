@@ -21,12 +21,12 @@ import moment from 'moment'
 import VueRouter from 'vue-router'
 
 import Amplify, * as AmplifyModules from 'aws-amplify'
-import config from './aws-exports'
+import awsConfig from './aws-exports'
 
 import { AmplifyPlugin } from 'aws-amplify-vue'
 Vue.use(AmplifyPlugin, AmplifyModules)
 
-Amplify.configure(config)
+Amplify.configure(awsConfig)
 
 import 'vue-multiselect/dist/vue-multiselect.min.css'
 

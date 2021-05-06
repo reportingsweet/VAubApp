@@ -23,7 +23,7 @@
     "es6-promise": "^4.2.6",
     "express-vue": "^5.8.2",
     "fs": "0.0.1-security",
-    "highcharts": "^7.0.1",
+    "highcharts": "^9.0.0",
     "highcharts-vue": "^1.2.0",
     "js-base64": "^2.5.1",
     "moment": "^2.24.0",
